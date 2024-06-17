@@ -12,18 +12,18 @@ var router = express.Router();
 // });
 router.get('/', homeController.renderGet);
 
-router.get('/login', function(req, res, next) {
-  res.render('login', { title: 'Express' });
-  console.log("hello, world");
-});
+// router.get('/login', function(req, res, next) {
+//   res.render('login', { title: 'Express' });
+//   console.log("hello, world");
+// });
 
-router.post('/userlogin', function(req, res, next) {
+// router.post('/userlogin', function(req, res, next) {
   
-  //test
-} )
+//   //test
+// } )
 
 router.route('/tools')
-  .get(toolsController.getTools)
-  .post(toolsController.postTools)
+  .get(toolsController.showTools)
+  .post(toolsController.processTools)
 
 module.exports = router;

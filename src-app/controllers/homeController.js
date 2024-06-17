@@ -1,11 +1,18 @@
 const renderGet = async (req, res, next) => {
-    if (req.session.username) {
-        return res.redirect('/feed')
+    try {
+        if (req.session.username) {
+            return res.redirect('/feed')
+        }
+
+        res.locals.username = ""
+
+        return res.render('login', {})
     }
-
-    res.locals.username = ""
-
-    return res.render('views/login', {})
+    catch (err) {
+        console.log(err);
+        return res.status(500).json(err);
+    }
 }
 
-module.exports = renderGet;
+module.exports = { renderGet }
+

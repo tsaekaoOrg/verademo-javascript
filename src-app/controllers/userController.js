@@ -6,26 +6,26 @@ const showLogin = async (req, res, next) => {
         var username = req.query.username;
 
         if (req.session.username) {
-            if (req.query.target) {
+            if (target) {
                 return res.redirect(target);
             } else {
                 return res.redirect('feed');
             }
         }
 
-        // User user = UserFactory.createFromRequest(httpRequest);
-		// if (user != null) {
-		// 	Utils.setSessionUserName(httpRequest, httpResponse, user.getUserName());
-		// 	logger.info("User is remembered - redirecting...");
-		// 	if (target != null && !target.isEmpty() && !target.equals("null")) {
-		// 		return "redirect:" + target;
-		// 	} else {
-		// 		// default to user's feed
-		// 		return Utils.redirect("feed");
-		// 	}
-		// } else {
-		// 	logger.info("User is not remembered");
-		// }
+        var user = UserFactory.createFromRequest(httpRequest);
+		if (user != null) {
+            req.session.user = user.username;
+			console.log("User is remembered - redirecting...");
+			if (target) {
+				return res.redirect(target);
+			} else {
+				// default to user's feed
+				return res.redirect('feed');
+			}
+		} else {
+			console.log("User is not remembered");
+		}
 
 		if (!username) {
 			username = "";
@@ -221,5 +221,19 @@ async function testFunc(req, res)
     
 }
 
-module.exports = { testFunc, showLogin, processLogin }
+async function createFromRequest(req) {
+    var cookie = req.cookie.user;
+    if (!cookie) {
+        return null;
+    }
+    var user = JSON.parse(atob(req.cookies.cart));
+    return user;
+}
+
+async function updateInResponse(currentUser, res) {
+    res.cookie('user', btoa(JSON.stringify(currentUser)));
+    return res;
+}
+
+module.exports = { testFunc, showLogin, processLogin };
 

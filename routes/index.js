@@ -11,11 +11,9 @@ var router = express.Router();
 //   res.render('index', { title: 'Express' });
 // });
 router.get('/', homeController.renderGet);
-
-// router.get('/login', function(req, res, next) {
-//   res.render('login', { title: 'Express' });
-//   console.log("hello, world");
-// });
+//router.get('/reset', resetController.renderGet(req,res));
+router.get('/test', userController.testFunc);
+router.get('/login', userController.getLogin);
 
 // router.post('/userlogin', function(req, res, next) {
   

@@ -20,7 +20,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'resources')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
@@ -40,7 +40,9 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
 app.listen(PORT, () => {
   console.log(`listening for requests on port ${PORT}`)
 })
+
 module.exports = app;

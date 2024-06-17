@@ -73,14 +73,14 @@
 					<div class="panel-body">
 						<form method="POST" action="userLogin">
 							<input type="hidden" name="target"
-								value="<%=(String) request.getAttribute("target")%>">
+								value="<{{ target }}>">
 							<table class="table table-condensed">
 								<tbody>
 									<tr>
 										<td>Username</td>
 										<td><div class="form-group">
 												<input type="text" class="form-control" name="user"
-													value="<%=(String) request.getAttribute("username")%>">
+													value="{{ username }}">
 											</div><a href="javascript:hint()">Hint</a></td>
 									</tr>
 									<tr>

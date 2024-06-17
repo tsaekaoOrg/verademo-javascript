@@ -1,4 +1,5 @@
 var express = require('express');
+var toolsController = require('src-app/controllers/tools.js');
 var router = express.Router();
 
 /* GET home page. */
@@ -13,4 +14,8 @@ router.post('/userlogin', function(req, res, next) {
   
   //test
 } )
+
+router.get('/tools', toolsController.getTools);
+router.post('/tools', toolsController.postTools)
+
 module.exports = router;

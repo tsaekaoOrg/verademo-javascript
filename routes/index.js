@@ -21,6 +21,9 @@ router.get('/', homeController.renderGet);
   
 //   //test
 // } )
+router.route('/login')
+  .get(userController.showLogin)
+  .post(userController.processLogin)
 
 router.route('/tools')
   .get(toolsController.showTools)

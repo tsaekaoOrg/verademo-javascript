@@ -7,8 +7,10 @@ router.get('/', function(req, res, next) {
 });
 router.get('/login', function(req, res, next) {
   res.render('login', { title: 'Express' });
+  console.log("hello, world");
 });
 router.post('/userlogin', function(req, res, next) {
-  //Do something here
+  
+  //test
 } )
 module.exports = router;

@@ -1,8 +1,167 @@
 const mariadb = require('mariadb');
 
-function getLogin(req, res)
-{
-    res.render('login', {})
+const showLogin = async (req, res, next) => {
+    try {
+        var target = req.query.target;
+        var username = req.query.username;
+
+        if (req.session.username) {
+            if (req.query.target) {
+                return res.redirect(target);
+            } else {
+                return res.redirect('feed');
+            }
+        }
+
+        // User user = UserFactory.createFromRequest(httpRequest);
+		// if (user != null) {
+		// 	Utils.setSessionUserName(httpRequest, httpResponse, user.getUserName());
+		// 	logger.info("User is remembered - redirecting...");
+		// 	if (target != null && !target.isEmpty() && !target.equals("null")) {
+		// 		return "redirect:" + target;
+		// 	} else {
+		// 		// default to user's feed
+		// 		return Utils.redirect("feed");
+		// 	}
+		// } else {
+		// 	logger.info("User is not remembered");
+		// }
+
+		if (!username) {
+			username = "";
+		}
+
+		if (!target) {
+			target = "";
+		}
+
+        return res.render('login', {username, target});
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(500).json(err);
+    }
+}
+
+const processLogin = async (req, res, next) => {
+    var username = req.body.user
+    var password = req.body.password
+    var remember = req.body.remember
+    var target = req.body.target
+
+    try {
+        // Determine eventual redirect. Do this here in case we're already logged in
+		var nextView;
+		if (target) {
+			nextView = res.redirect(target);
+		} else {
+			// default to user's feed
+			nextView = res.redirect("feed");
+		}
+
+		var connect = null;
+		/* START BAD CODE */
+		var sqlStatement = null;
+		/* END BAD CODE */
+		/* START GOOD CODE
+		PreparedStatement sqlStatement = null;
+        /* END GOOD CODE */
+		// try {
+		// 	// Get the Database Connection
+		// 	logger.info("Creating the Database connection");
+		// 	Class.forName("com.mysql.jdbc.Driver");
+		// 	connect = DriverManager.getConnection(Constants.create().getJdbcConnectionString());
+
+
+		// 	/* START BAD CODE */
+		// 	// Execute the query
+		// 	logger.info("Creating the Statement");
+		// 	String sqlQuery = "select username, password, password_hint, created_at, last_login, real_name, blab_name from users where username='"
+		// 			+ username + "';";
+		// 	sqlStatement = connect.createStatement();
+		// 	logger.info("Execute the Statement");
+		// 	ResultSet result = sqlStatement.executeQuery(sqlQuery);
+		// 	/* END BAD CODE */
+		// 	/* START GOOD CODE
+		// 	String sqlQuery = "select * from users where username=? and password=?;";
+		// 	logger.info("Preparing the PreparedStatement");
+		// 	sqlStatement = connect.prepareStatement(sqlQuery);
+		// 	logger.info("Setting parameters for the PreparedStatement");
+		// 	sqlStatement.setString(1, username);
+		// 	sqlStatement.setString(2, password);
+		// 	logger.info("Executing the PreparedStatement");
+		// 	ResultSet result = sqlStatement.executeQuery();
+		// 	/* END GOOD CODE */
+
+
+
+		// 	// Did we find exactly 1 user that matched?
+		// 	if (result.first() && BCrypt.checkpw(password, result.getString("password"))) {
+		// 		logger.info("User Found.");
+		// 		// Remember the username as a courtesy.
+		// 		Utils.setUsernameCookie(response, result.getString("username"));
+
+		// 		// If the user wants us to auto-login, store the user details as a cookie.
+		// 		if (remember != null) {
+		// 			User currentUser = new User(result.getString("username"), result.getString("password_hint"),
+		// 					result.getTimestamp("created_at"), result.getTimestamp("last_login"),
+		// 					result.getString("real_name"), result.getString("blab_name"));
+
+		// 			UserFactory.updateInResponse(currentUser, response);
+		// 		}
+
+		// 		Utils.setSessionUserName(req, response, result.getString("username"));
+
+		// 		// Update last login timestamp
+		// 		PreparedStatement update = connect.prepareStatement("UPDATE users SET last_login=NOW() WHERE username=?;");
+		// 		update.setString(1, result.getString("username"));
+		// 		update.execute();
+		// 	} else {
+		// 		// Login failed...
+		// 		logger.info("User Not Found");
+		// 		model.addAttribute("error", "Login failed. Please try again.");
+		// 		model.addAttribute("target", target);
+		// 		nextView = "login";
+		// 	}
+		// } catch (SQLException exceptSql) {
+		// 	logger.error(exceptSql);
+		// 	model.addAttribute("error", exceptSql.getMessage() + "<br/>" + displayErrorForWeb(exceptSql));
+		// 	model.addAttribute("target", target);
+		// 	nextView = "login";
+		// } catch (ClassNotFoundException cnfe) {
+		// 	logger.error(cnfe);
+		// 	model.addAttribute("error", cnfe.getMessage());
+		// 	model.addAttribute("target", target);
+
+		// } finally {
+		// 	try {
+		// 		if (sqlStatement != null) {
+		// 			sqlStatement.close();
+		// 		}
+		// 	} catch (SQLException exceptSql) {
+		// 		logger.error(exceptSql);
+		// 		model.addAttribute("error", exceptSql.getMessage());
+		// 		model.addAttribute("target", target);
+		// 	}
+		// 	try {
+		// 		if (connect != null) {
+		// 			connect.close();
+		// 		}
+		// 	} catch (SQLException exceptSql) {
+		// 		logger.error(exceptSql);
+		// 		model.addAttribute("error", exceptSql.getMessage());
+		// 		model.addAttribute("target", target);
+		// 	}
+		// }
+
+		// // Redirect to the appropriate place based on login actions above
+		// logger.info("Redirecting to view: " + nextView);
+		return nextView;
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(500).json(err);
+    }
 }
 
 function showRegister(req, res)
@@ -62,59 +221,5 @@ async function testFunc(req, res)
     
 }
 
-module.exports = { testFunc, getLogin }
-const showLogin = async (req, res, next) => {
-    try {
-        var target = req.query.target
-        var username = req.query.username
-
-        if (req.session.username) {
-            if (req.query.target) {
-                return res.redirect(target)
-            } else {
-                return res.redirect('feed')
-            }
-        }
-
-        // User user = UserFactory.createFromRequest(httpRequest);
-		// if (user != null) {
-		// 	Utils.setSessionUserName(httpRequest, httpResponse, user.getUserName());
-		// 	logger.info("User is remembered - redirecting...");
-		// 	if (target != null && !target.isEmpty() && !target.equals("null")) {
-		// 		return "redirect:" + target;
-		// 	} else {
-		// 		// default to user's feed
-		// 		return Utils.redirect("feed");
-		// 	}
-		// } else {
-		// 	logger.info("User is not remembered");
-		// }
-
-		if (!username) {
-			username = "";
-		}
-
-		if (!target) {
-			target = "";
-		}
-
-        return res.render('login', {username, target})
-    }
-    catch (err) {
-        console.log(err);
-        return res.status(500).json(err);
-    }
-}
-
-const processLogin = async (req, res, next) => {
-    try {
-        
-    }
-    catch (err) {
-        console.log(err);
-        return res.status(500).json(err);
-    }
-}
-
-module.exports = { showLogin, processLogin }
+module.exports = { testFunc, showLogin, processLogin }
 

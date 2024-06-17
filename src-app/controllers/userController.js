@@ -1,10 +1,5 @@
 const mariadb = require('mariadb');
 
-function getLogin(req, res)
-{
-    res.render('login', {})
-}
-
 function showRegister(req, res)
 {
     res.render('register',{});
@@ -33,36 +28,35 @@ function processRegisterFinish(req, res)
 
 async function testFunc(req, res)
 {
-    let conn;
+    const pool = mariadb.createPool({
+        host: process.env.MARIADB_HOST,
+        port: process.env.MARIADB_PORT,
+        user: process.env.MARIADB_USER,
+        password: process.env.MARIADB_PASSWORD,
+        database: process.env.MARIADB_DATABASE_NAME,
+    });
     try {
         console.log("creating DB Connection");
-        conn = await mariadb.createConnection({
-            host: 'localhost',
-            user: 'root',
-            password: '',
-            database: "blabs",
-        });
+        let conn = await pool.getConnection();
         // Use Connection to get contacts data
         console.log("sending query")
-        rows = await conn.query("SELECT username,password FROM blabs.users");
-    
+        const rows = await conn.query("SELECT username,password FROM blab.users");
         //Print list of contacts
         for (i = 0; i < rows.length; i++) {
            console.log(`${rows[i].username} ${rows[i].password}` );
         }
-    } catch(err)
-    {
+        conn.close();
+    } catch(err){
         // Manage Errors
         console.log(err);
     } finally {
         // Close Connection
-        if(conn) conn.close();
+        //if(conn) 
     }
     return res.render('reset',{})
     
 }
 
-module.exports = { testFunc, getLogin }
 const showLogin = async (req, res, next) => {
     try {
         var target = req.query.target
@@ -116,5 +110,4 @@ const processLogin = async (req, res, next) => {
     }
 }
 
-module.exports = { showLogin, processLogin }
-
+module.exports = { showLogin, processLogin, testFunc}

@@ -13,7 +13,6 @@ var router = express.Router();
 router.get('/', homeController.renderGet);
 //router.get('/reset', resetController.renderGet(req,res));
 router.get('/test', userController.testFunc);
-router.get('/login', userController.getLogin);
 
 // router.post('/userlogin', function(req, res, next) {
   

@@ -1,4 +1,4 @@
-const renderGet = async (req, res, next) => {
+async function renderGet(req, res) {
     try {
         if (req.session.username) {
             return res.redirect('/feed')

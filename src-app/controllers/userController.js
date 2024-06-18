@@ -1,6 +1,6 @@
 const mariadb = require('mariadb');
 
-const showLogin = async (req, res, next) => {
+async function showLogin(req, res) {
     try {
         var target = req.query.target;
         var username = req.query.username;
@@ -43,7 +43,7 @@ const showLogin = async (req, res, next) => {
     }
 }
 
-const processLogin = async (req, res, next) => {
+async function processLogin(req, res) {
     var username = req.body.user
     var password = req.body.password
     var remember = req.body.remember

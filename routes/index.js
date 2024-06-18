@@ -1,10 +1,10 @@
-var express = require('express');
-var toolsController = require('../src-app/controllers/toolsController.js');
-var homeController = require('../src-app/controllers/homeController.js');
-var resetController = require('../src-app/controllers/resetController.js');
-var blabController = require('../src-app/controllers/blabController.js');
-var userController = require('../src-app/controllers/userController.js');
-var router = express.Router();
+const express = require('express');
+const toolsController = require('../src-app/controllers/toolsController.js');
+const homeController = require('../src-app/controllers/homeController.js');
+const resetController = require('../src-app/controllers/resetController.js');
+const blabController = require('../src-app/controllers/blabController.js');
+const userController = require('../src-app/controllers/userController.js');
+const router = express.Router();
 
 /* GET home page. */
 // router.get('/', function(req, res, next) {

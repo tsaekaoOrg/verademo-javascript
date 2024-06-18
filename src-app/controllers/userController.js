@@ -14,7 +14,7 @@ async function showLogin(req, res) {
             }
         }
 
-        var user = UserFactory.createFromRequest(httpRequest);
+        var user = createFromRequest(httpRequest);
 		if (user != null) {
             req.session.user = user.username;
 			console.log("User is remembered - redirecting...");
@@ -217,10 +217,13 @@ async function showRegisterFinish(req, res) {
 }
 
 async function processRegisterFinish(req, res) {
-	var password = req.query.password
-	var cpassword = req.query.cpassword
-	var realName = req.query.realName
-	var blabName = req.query.blabName
+	console.log("Entering processRegisterFinish");
+
+	var password = req.body.password
+	var cpassword = req.body.cpassword
+	var realName = req.body.realName
+	var blabName = req.body.blabName
+	
 	
 
     // const pool = mariadb.createPool({
@@ -277,5 +280,5 @@ async function updateInResponse(currentUser, res) {
     return res;
 }
 
-module.exports = { testFunc, showLogin, processLogin };
+module.exports = { testFunc, showLogin, processLogin, showRegister, processRegister };
 

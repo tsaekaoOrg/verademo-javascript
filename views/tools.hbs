@@ -10,12 +10,12 @@
 <title>Tools</title>
 
 <!-- Bootstrap core CSS -->
-<link href="resources/css/bootstrap.min.css" rel="stylesheet">
+<link href="css/bootstrap.min.css" rel="stylesheet">
 <!-- Bootstrap theme -->
-<link href="resources/css/bootstrap-theme.min.css" rel="stylesheet">
+<link href="css/bootstrap-theme.min.css" rel="stylesheet">
 
 <!-- Custom styles for this template -->
-<link href="resources/css/pwm.css" rel="stylesheet">
+<link href="css/pwm.css" rel="stylesheet">
 
 <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 <!--[if lt IE 9]>
@@ -38,7 +38,7 @@
 					<li role="presentation"><a href="logout">Logout</a></li>
 				</ul>
 			</nav>
-			<img src="resources/images/Tokyoship_Talk_icon.svg" height="100"
+			<img src="images/Tokyoship_Talk_icon.svg" height="100"
 				width="100">
 		</div>
 	</div>
@@ -52,11 +52,10 @@
 			<p>Check the uptime of a host here by pinging it. Example: 127.0.0.1</p>
 			<form method="post">
 				<label for="host">Host:</label> <input type="text" name="host"
-					<%if (request.getParameter("host") != null) {%>
-					value="<%=request.getParameter("host")%>" <%}%> /> <input
+					{{#if host}} value={{host}} {{/if}} /> <input
 					type="submit" value="Check" />
 			</form>
-			<pre>${ping}</pre>
+			<pre>{{ping}}</pre>
 		</div>
 		<div>
 			<h5>Show a UNIX fortune from one of the 2 supported dictionaries.</h5>
@@ -66,14 +65,14 @@
 					<option value="riddles">riddles</option>
 				</select> <input type="submit" value="Change" />
 			</form>
-			<pre>${fortunes}</pre>
+			<pre>{{fortunes}}</pre>
 		</div>
 	</div>
 
 	<!-- Bootstrap core JavaScript
     ================================================== -->
 	<!-- Placed at the end of the document so the pages load faster -->
-	<script src="resources/js/jquery-1.11.2.min.js"></script>
-	<script src="resources/js/bootstrap.min.js"></script>
+	<script src="js/jquery-1.11.2.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
 </body>
 </html>

@@ -1,10 +1,12 @@
 const { spawn } = require('child_process');
-var express = require('express');
-// var tools = require('tools.js');
+const e = require('express');
+const express = require('express');
+const { loggers } = require('winston');
+// const tools = require('tools.js');
 
 // View engine
 // app.set('view engine', 'hbs');
-//app.set('views', path.join(__dirname, 'views'));
+// app.set('views', path.join(__dirname, 'views'));
 
 
 // Loads tools page
@@ -13,71 +15,80 @@ function showTools(req, res) {
     res.render('tools.hbs', {});
 }
 // Performs actions on tools page
-function processTools(req, res) {
-    const host = req.body.host;
-    const fortunefile = req.body.fortunefile;
-    req.file = fortunefile ? fortune(fortunefile) : "";
-    req.host = host;
-    req.ping = host ? ping(host) : "";
+async function processTools(req, res) {
+    try {
+        const host = req.body.host;
+        const fortunefile = req.body.fortunefile;
+        console.log(host);
+        const fortunes = fortunefile ? await fortune(fortunefile) : "";
+        // req.host = host;
+        const pingResult = host ? await ping(host) : "";
 
-    return res.render('tools', {host : host, file: req.file, ping : req.ping});   
+        return res.render('tools', {host, fortunes, ping : pingResult}); 
+
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(500).json(err);
+    }
 }
 // Pings selected host based on user input, then outputs the results
-function ping(host) {
+async function ping(host) {
     return new Promise((resolve, reject) => {
         let output = "";
-        logger.info("Pinging " + host);
-        const pingProcess = spawn('ping', ['-c', '1', host]);
+        console.log("Pinging " + host);
 
-        pingProcess.stdout.on('data', (data) => {
-            output += data.toString();
-        });
-
-        pingProcess.on('close', (code) => {
-            if (code == 0) {
-                logger.info("Ping successful");
+        const timer = setTimeout(() => {
+            console.log("Ping timed out");
+            output = "ping: unknown host " + host;
+            reject(output);
+        }, 5000);
+        try {
+            let pingProcess = spawn('ping', ['-c', '1', host]);
+            pingProcess.stdout.on('data', (data) => {
+                output = data.toString();
+                console.log(output);
+                console.log("Exit code: " + pingProcess.exitCode);
                 resolve(output);
-            } else {
-                logger.info("Ping failed: ", code);
-                reject(`ping: unknown host ${host}`);
-            }
-        });
-
-        pingProcess.on('error', (err) => {
-            logger.info("Ping failed: ", err);
-            reject(err);
-        });
+            });
+            pingProcess.stderr.on('data', (data) => {
+                console.log("Error: " + data.toString());
+                reject(data.toString());
+            });
+            pingProcess.on('close', (code) => {
+                console.log("Exit code: " + code);
+                clearTimeout(timer);
+                resolve(output);
+            });
+        } catch (err) {
+            console.error("Error occured during ping: ", err);
+            output = "ping: unknown host " + host;
+            resolve(output);
+        }
     });
 }
 
 // Produces a fortune based on selection
-function fortune(file) {
-    return new Promise((resolve, reject) => {
-        let output = "";
-        logger.info("Generating fortune");
-        const fortuneProcess = spawn('fortune', [file]);
-
+function fortune(file, callback) {
+    let output = "";
+    const cmd = "/usr/games/fortune";
+    console.log("Fortune file: " + file);
+    try {
+        const fortuneProcess = spawn(cmd, [file]);
         fortuneProcess.stdout.on('data', (data) => {
-            output += data.toString();
+            output = data.toString();
+            console.log(output);
+            console.log("Exit code: " + fortuneProcess.exitCode);
+            callback(output);
         });
 
-        fortuneProcess.on('close', (code) => {
-            if (code == 0) {
-                logger.info("Fortune successful");
-                resolve(output);
-            } else {
-                logger.info("Fortune failed: ", code);
-                reject(`fortune: unknown file ${file}`);
-            }
-        });
-
-        fortuneProcess.on('error', (err) => {
-            logger.info("Fortune failed: ", err);
-            reject(err);
-        });
-    });
+    } catch (err) {
+        console.log("Error occured during fortune: ", err);
+        callback(err);
+    }
+    return output;
 }
 
-module.exports = {showTools, processTools}
+module.exports = {showTools, processTools, ping, fortune}
 
 

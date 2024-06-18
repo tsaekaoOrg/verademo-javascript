@@ -78,7 +78,8 @@
 										<td>Username</td>
 										<td><div class="form-group">
 												<%= request.getSession().getAttribute("username") %>
-											</div></td>
+											</div>
+											<input type="hidden" name="username" value="{{ username }}"></td>
 									</tr>
 									<tr>
 										<td>Password</td>

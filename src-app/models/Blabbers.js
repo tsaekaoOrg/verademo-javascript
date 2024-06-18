@@ -3,15 +3,15 @@ var express = require('express');
 
 class Blabber {
     constructor () {
-        var id = none;
-        var username = none;
-        var realName = none;
-        var BlabName = none;
-        var createdDate = none;
-        var numberListeners = none;
-        var numberListenings = none;
+        this.id = none;
+        this.username = none;
+        this.realName = none;
+        this.BlabName = none;
+        this.createdDate = none;
+        this.numberListeners = none;
+        this.numberListenings = none;
 
-        const date_format = "%b %d %Y";
+        this.date_format = "%b %d %Y";
     }
 
     async getId() {

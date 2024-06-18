@@ -2,43 +2,43 @@ var express = require('express');
 
 class Comment  {
     constructor() {
-        var commentID = None;
-        var blabID = None;
-        var blabber = None;
-        var content = None;
-        var timestamp = None;
+        this.commentID = None;
+        this.blabID = None;
+        this.blabber = None;
+        this.content = None;
+        this.timestamp = None;
 
-        const date_format = "%b %d %Y";
+        this.date_format = "%b %d %Y";
     }
 
     async getCommentID() {
         return this.commentID;
     }
-    async setCommentID(commentID, newCommentID) {
+    async setCommentID(newCommentID) {
         this.commentID = newCommentID;
     }
     async getBlabID() {
         return this.blabID;
     }
-    async setBlabID(blabID, newBlabID) {
+    async setBlabID(newBlabID) {
         this.blabID = newBlabID;
     }
     async getAuthor() {
         return this.blabber;
     }
-    async setAuthor(blabber, newBlabber) {
+    async setAuthor(newBlabber) {
         this.blabber = newBlabber;
     }
     async getContent() {
         return this.content;
     }
-    async setContent(content, newContent) {
+    async setContent(newContent) {
         this.content = newContent;
     }
     async getTimestamp() {
         return this.timestamp;
     }
-    async setTimestamp(timestamp, newTimestamp) {
+    async setTimestamp(newTimestamp) {
         this.timestamp = newTimestamp;
     }
 }

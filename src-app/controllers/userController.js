@@ -2,8 +2,8 @@ const mariadb = require('mariadb');
 
 async function showLogin(req, res) {
     try {
-        var target = req.query.target;
-        var username = req.query.username;
+        const target = req.query.target;
+        const username = req.query.username;
 
         if (req.session.username) {
 			console.log("User is already logged in - redirecting...");
@@ -14,7 +14,7 @@ async function showLogin(req, res) {
             }
         }
 
-        var user = createFromRequest(httpRequest);
+        let user = createFromRequest(httpRequest);
 		if (user != null) {
             req.session.user = user.username;
 			console.log("User is remembered - redirecting...");
@@ -50,14 +50,14 @@ async function processLogin(req, res) {
 
 	console.log("Entering processLogin");
 
-    var username = req.body.user
-    var password = req.body.password
-    var remember = req.body.remember
-    var target = req.body.target
+    const username = req.body.user
+    const password = req.body.password
+    const remember = req.body.remember
+    const target = req.body.target
 
     try {
         // Determine eventual redirect. Do this here in case we're already logged in
-		var nextView;
+		let nextView;
 		if (target) {
 			nextView = res.redirect(target);
 		} else {
@@ -65,9 +65,9 @@ async function processLogin(req, res) {
 			nextView = res.redirect("feed");
 		}
 
-		var connect = null;
+		let connect = null;
 		/* START BAD CODE */
-		var sqlStatement = null;
+		let sqlStatement = null;
 		/* END BAD CODE */
 		/* START GOOD CODE
 		PreparedStatement sqlStatement = null;
@@ -186,7 +186,7 @@ async function showRegister(req, res) {
 
 async function processRegister(req, res)
 {
-	var username = req.query.user;
+	const username = req.query.user;
 	req.session.username = username; // move this to the end of processRegisterFinish
 
 	// console.log("Creating the Database connection");
@@ -219,10 +219,11 @@ async function showRegisterFinish(req, res) {
 async function processRegisterFinish(req, res) {
 	console.log("Entering processRegisterFinish");
 
-	var password = req.body.password
-	var cpassword = req.body.cpassword
-	var realName = req.body.realName
-	var blabName = req.body.blabName
+	const username = req.body.username
+	const password = req.body.password
+	const cpassword = req.body.cpassword
+	const realName = req.body.realName
+	const blabName = req.body.blabName
 	
 	
 
@@ -266,16 +267,16 @@ async function testFunc(req, res)
     
 }
 
-async function createFromRequest(req) {
-    var cookie = req.cookie.user;
+function createFromRequest(req) {
+    const cookie = req.cookie.user;
     if (!cookie) {
         return null;
     }
-    var user = JSON.parse(atob(req.cookies.cart));
+    const user = JSON.parse(atob(cookie));
     return user;
 }
 
-async function updateInResponse(currentUser, res) {
+function updateInResponse(currentUser, res) {
     res.cookie('user', btoa(JSON.stringify(currentUser)));
     return res;
 }

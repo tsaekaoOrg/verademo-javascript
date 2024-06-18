@@ -1,8 +1,8 @@
 const { spawn } = require('child_process');
 const e = require('express');
-var express = require('express');
+const express = require('express');
 const { loggers } = require('winston');
-// var tools = require('tools.js');
+// const tools = require('tools.js');
 
 // View engine
 // app.set('view engine', 'hbs');
@@ -17,7 +17,7 @@ function showTools(req, res) {
 // Performs actions on tools page
 async function processTools(req, res) {
     try {
-        var host = req.body.host;
+        const host = req.body.host;
         const fortunefile = req.body.fortunefile;
         console.log(host);
         const fortunes = fortunefile ? await fortune(fortunefile) : "";
@@ -44,7 +44,7 @@ async function ping(host) {
             reject(output);
         }, 5000);
         try {
-            var pingProcess = spawn('ping', ['-c', '1', host]);
+            let pingProcess = spawn('ping', ['-c', '1', host]);
             pingProcess.stdout.on('data', (data) => {
                 output = data.toString();
                 console.log(output);

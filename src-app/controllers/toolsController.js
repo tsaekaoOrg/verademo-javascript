@@ -20,20 +20,21 @@ async function processTools(req, res) {
         var host = req.body.host;
         const fortunefile = req.body.fortunefile;
         console.log(host);
-        // file = fortunefile ? fortune(fortunefile) : "";
+        const fortunes = fortunefile ? await fortune(fortunefile) : "";
         // req.host = host;
-        // var pingResult = host ? ping(host) : "";
-        if (host) {
-            ping(host, function(ping) {
-                return res.render('tools', {host, ping});   
-            })
-        } else if (fortunefile) {
-            fortune(file, function(result) {
-                return res.render('tools', {result});   
-            })
-        } else {
-            return res.render('tools');
-        }
+        const pingResult = host ? await ping(host) : "";
+        // if (host) {
+        //     ping(host, function(ping) {
+        //         return res.render('tools', {host, ping});   
+        //     })
+        // } else if (fortunefile) {
+        //     fortune(file, function(result) {
+        //         return res.render('tools', {result});   
+        //     })
+        // } else {
+        //     return res.render('tools');
+        // }
+        return res.render('tools', {host, fortunes, ping : pingResult}); 
 
     }
     catch (err) {
@@ -46,7 +47,7 @@ async function ping(host, callback) {
     let output = "";
     console.log("Pinging " + host);
     try {
-        const pingProcess = spawn('ping', ['-c', '1', host]);
+        var pingProcess = spawn('ping', ['-c', '1', host]);
         pingProcess.stdout.on('data', (data) => {
             output = data.toString();
             console.log(output);

@@ -17,43 +17,43 @@ class Blabber {
     async getId() {
         return this.id;
     }
-    async setID(id, newID) {
+    async setID(newID) {
         this.id = newID;
     }
     async getUsername() {
         return this.username;
     }
-    async setUsername(username, newUsername) {
+    async setUsername(newUsername) {
         this.username = newUsername;
     }
     async getRealName() {
         return this.realName;
     }
-    async setRealName(realName, newRealName) {
+    async setRealName(newRealName) {
         this.realName = newRealName;
     }
     async getBlabName() {
         return this.BlabName;
     }
-    async setBlabName(BlabName, newBlabName) {
+    async setBlabName(newBlabName) {
         this.BlabName = newBlabName;
     }
     async getCreatedDate() {
         return this.createdDate;
     }
-    async setCreatedDate(createdDate, newCreatedDate) {
+    async setCreatedDate(newCreatedDate) {
         this.createdDate = newCreatedDate;
     }
     async getNumberListeners() {
         return this.numberListeners;
     }
-    async setNumberListeners(numberListeners, newNumberListeners) {
+    async setNumberListeners(newNumberListeners) {
         this.numberListeners = newNumberListeners;
     }
     async getNumberListenings() {
         return this.numberListenings;
     }
-    async setNumberListenings(numberListenings, newNumberListenings) {
+    async setNumberListenings(newNumberListenings) {
         this.numberListenings = newNumberListenings;
     }
 }

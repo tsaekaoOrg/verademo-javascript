@@ -25,21 +25,22 @@ function processTools(req, res) {
 // Pings selected host based on user input, then outputs the results
 function ping(host) {
     return new Promise((resolve, reject) => {
-        let output = "";
-        logger.info("Pinging " + host);
-        const pingProcess = spawn('ping', ['-c', '1', host]);
+        try {
+            let output = "";
+            logger.info("Pinging " + host);
+            const pingProcess = spawn('ping', ['-c', '1', host]);
 
-        pingProcess.stdout.on('data', (data) => {
-            output += data.toString();
-        });
+            pingProcess.stdout.on('data', (data) => {
+                output += data.toString();
+            });
 
-        pingProcess.on('close', (code) => {
-            if (code == 0) {
-                logger.info("Ping successful");
-                resolve(output);
-            } else {
-                logger.info("Ping failed: ", code);
-                reject(`ping: unknown host ${host}`);
+            pingProcess.on('close', (code) => {
+                if (code == 0) {
+                    logger.info("Ping successful");
+                    resolve(output);
+                } else {
+                    logger.info("Ping failed: ", code);
+                    reject(`ping: unknown host ${host}`);
             }
         });
 
@@ -47,6 +48,10 @@ function ping(host) {
             logger.info("Ping failed: ", err);
             reject(err);
         });
+    } catch (err) {
+        logger.info("Error occured during ping: ", err);
+        reject(err);
+    }
     });
 }
 

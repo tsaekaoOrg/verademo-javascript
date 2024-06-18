@@ -2,7 +2,7 @@ var express = require('express');
 var toolsController = require('../src-app/controllers/toolsController.js');
 var homeController = require('../src-app/controllers/homeController.js');
 var resetController = require('../src-app/controllers/resetController.js');
-var blabController = require('../src-app/controllers/blabController.js');
+var blabberController = require('../src-app/controllers/blabberController.js');
 var userController = require('../src-app/controllers/userController.js');
 var router = express.Router();
 

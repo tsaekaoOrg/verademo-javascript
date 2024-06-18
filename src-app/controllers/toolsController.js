@@ -4,7 +4,7 @@ var express = require('express');
 
 // View engine
 // app.set('view engine', 'hbs');
-//app.set('views', path.join(__dirname, 'views'));
+// app.set('views', path.join(__dirname, 'views'));
 
 
 // Loads tools page
@@ -26,7 +26,7 @@ function processTools(req, res) {
 function ping(host) {
     return new Promise((resolve, reject) => {
         let output = "";
-        logger.info("Pinging " + host);
+        console.log("Pinging " + host);
         const pingProcess = spawn('ping', ['-c', '1', host]);
 
         pingProcess.stdout.on('data', (data) => {
@@ -35,16 +35,16 @@ function ping(host) {
 
         pingProcess.on('close', (code) => {
             if (code == 0) {
-                logger.info("Ping successful");
+                console.log("Ping successful");
                 resolve(output);
             } else {
-                logger.info("Ping failed: ", code);
+                console.log("Ping failed: ", code);
                 reject(`ping: unknown host ${host}`);
             }
         });
 
         pingProcess.on('error', (err) => {
-            logger.info("Ping failed: ", err);
+            console.log("Ping failed: ", err);
             reject(err);
         });
     });
@@ -54,7 +54,7 @@ function ping(host) {
 function fortune(file) {
     return new Promise((resolve, reject) => {
         let output = "";
-        logger.info("Generating fortune");
+        console.log("Generating fortune");
         const fortuneProcess = spawn('fortune', [file]);
 
         fortuneProcess.stdout.on('data', (data) => {
@@ -63,16 +63,16 @@ function fortune(file) {
 
         fortuneProcess.on('close', (code) => {
             if (code == 0) {
-                logger.info("Fortune successful");
+                console.log("Fortune successful");
                 resolve(output);
             } else {
-                logger.info("Fortune failed: ", code);
+                console.log("Fortune failed: ", code);
                 reject(`fortune: unknown file ${file}`);
             }
         });
 
         fortuneProcess.on('error', (err) => {
-            logger.info("Fortune failed: ", err);
+            console.log("Fortune failed: ", err);
             reject(err);
         });
     });

@@ -6,6 +6,7 @@ async function showLogin(req, res) {
         var username = req.query.username;
 
         if (req.session.username) {
+			console.log("User is already logged in - redirecting...");
             if (target) {
                 return res.redirect(target);
             } else {
@@ -35,6 +36,8 @@ async function showLogin(req, res) {
 			target = "";
 		}
 
+		console.log("Entering showLogin with username " + username + " and target " + target);
+
         return res.render('login', {username, target});
     }
     catch (err) {
@@ -44,6 +47,9 @@ async function showLogin(req, res) {
 }
 
 async function processLogin(req, res) {
+
+	console.log("Entering processLogin");
+
     var username = req.body.user
     var password = req.body.password
     var remember = req.body.remember
@@ -164,30 +170,66 @@ async function processLogin(req, res) {
     }
 }
 
-function showRegister(req, res)
-{
-    res.render('register',{});
-}
-
-function processRegister(req, res)
-{
-    processRegisterFinish(req, res);
-}
-
-function showRegisterFinish(req, res)
-{
+async function showPasswordHint(req, res) {
 
 }
 
-function processRegisterFinish(req, res)
+async function processLogout(req, res) {
+
+}
+
+async function showRegister(req, res) {
+	console.log("Entering showRegister");
+
+    res.render('register', {});
+}
+
+async function processRegister(req, res)
 {
-    const pool = mariadb.createPool({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASS,
-        database: process.env.DB_NAME,
-        connectionLimit: 5
-    })
+	var username = req.query.user;
+	req.session.username = username; // move this to the end of processRegisterFinish
+
+	// console.log("Creating the Database connection");
+	// try {
+	// 	Class.forName("com.mysql.jdbc.Driver");
+	// 	Connection connect = DriverManager.getConnection(Constants.create().getJdbcConnectionString());
+
+	// 	String sql = "SELECT username FROM users WHERE username = '" + username + "'";
+	// 	Statement statement = connect.createStatement();
+	// 	ResultSet result = statement.executeQuery(sql);
+	// 	if (result.first()) {
+	// 		model.addAttribute("error", "Username '" + username + "' already exists!");
+	// 		return "register";
+	// 	} else {
+	// 		return "register-finish";
+	// 	}
+	// } catch (SQLException | ClassNotFoundException ex) {
+	// 	logger.error(ex);
+	// }
+
+    res.render('register');
+}
+
+async function showRegisterFinish(req, res) {
+	console.log("Entering showRegisterFinish");
+
+	res.render('register-finish')
+}
+
+async function processRegisterFinish(req, res) {
+	var password = req.query.password
+	var cpassword = req.query.cpassword
+	var realName = req.query.realName
+	var blabName = req.query.blabName
+	
+
+    // const pool = mariadb.createPool({
+    //     host: process.env.DB_HOST,
+    //     user: process.env.DB_USER,
+    //     password: process.env.DB_PASS,
+    //     database: process.env.DB_NAME,
+    //     connectionLimit: 5
+    // })
 }
 
 async function testFunc(req, res)

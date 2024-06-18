@@ -245,7 +245,7 @@ async function testFunc(req, res)
         port: 3306,
         user: 'root',
         password: '',
-        //database: 'blab',
+        database: 'blab',
     });
     
     try {
@@ -255,8 +255,8 @@ async function testFunc(req, res)
         //conn = await mariadb.createConnection(connectionURI)
         // Use Connection to get contacts data
         console.log("sending query")
-        const rows = await conn.query("SHOW DATABASES;");
-        //const rows = await conn.query("SELECT username,password FROM blab.users;");
+        //const rows = await conn.query("SHOW DATABASES;");
+        const rows = await conn.query("SELECT username,password FROM blab.users;");
         //Print list of contacts
         for (i = 0; i < rows.length; i++) {
            console.log(rows[i] );

@@ -32,10 +32,10 @@ services:
     #command: 
       #- /usr/local/bin/docker-entrypoint.sh mysqld > /dev/null 2>&1 & disown
     environment:
-      #MARIADB_DATABASE: blab,
+      - MARIADB_DATABASE=blab
       - MARIADB_ALLOW_EMPTY_ROOT_PASSWORD=1
       
-    #volumes:
-    #  - ./db:/docker-entrypoint-initdb.d
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
     ports:
       - "3306:3306"

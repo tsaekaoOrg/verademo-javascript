@@ -1,0 +1,41 @@
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker compose reference guide at
+# https://docs.docker.com/compose/compose-file/
+
+# Here the instructions define your application as two services called "todo-app" and “todo-database”
+# The service “todo-app” is built from the Dockerfile in the /app directory,
+# and the service “todo-database” uses the official MongoDB image 
+# from Docker Hub - https://hub.docker.com/_/mongo. 
+# You can add other services your application may depend on here.
+
+services:
+  app:
+    build: 
+      context: ./
+    depends_on:
+      - database
+    environment:
+      NODE_ENV: development
+    ports:
+      - 8000:8000
+    develop:
+      watch:
+        - path: package.json
+          action: rebuild
+        - path: ./
+          target: /app
+          action: sync
+
+  database:
+    image: mariadb:10.6.2
+    container_name: mariadb
+    #command: 
+      #- /usr/local/bin/docker-entrypoint.sh mysqld > /dev/null 2>&1 & disown
+    environment:
+      #MARIADB_DATABASE: blab,
+      - MARIADB_ALLOW_EMPTY_ROOT_PASSWORD=1
+      
+    #volumes:
+    #  - ./db:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"

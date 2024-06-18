@@ -28,22 +28,28 @@ function processRegisterFinish(req, res)
 
 async function testFunc(req, res)
 {
+    //let conn;
+    
     const pool = mariadb.createPool({
-        host: process.env.MARIADB_HOST,
-        port: process.env.MARIADB_PORT,
-        user: process.env.MARIADB_USER,
-        password: process.env.MARIADB_PASSWORD,
-        database: process.env.MARIADB_DATABASE_NAME,
+        host: 'mariadb',
+        port: 3306,
+        user: 'root',
+        password: '',
+        //database: 'blab',
     });
+    
     try {
         console.log("creating DB Connection");
         let conn = await pool.getConnection();
+
+        //conn = await mariadb.createConnection(connectionURI)
         // Use Connection to get contacts data
         console.log("sending query")
-        const rows = await conn.query("SELECT username,password FROM blab.users");
+        const rows = await conn.query("SHOW DATABASES;");
+        //const rows = await conn.query("SELECT username,password FROM blab.users;");
         //Print list of contacts
         for (i = 0; i < rows.length; i++) {
-           console.log(`${rows[i].username} ${rows[i].password}` );
+           console.log(rows[i] );
         }
         conn.close();
     } catch(err){

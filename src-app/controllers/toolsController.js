@@ -61,7 +61,7 @@ async function ping(host, callback) {
 }
 
 // Produces a fortune based on selection
-function fortune(file) {
+function fortune(file, callback) {
     let output = "";
     const cmd = "/usr/games/fortune";
     console.log("Fortune file: " + file);
@@ -71,6 +71,7 @@ function fortune(file) {
             output = data.toString();
             console.log(output);
             console.log("Exit code: " + fortuneProcess.exitCode);
+            callback(output);
         });
 
     } catch (err) {

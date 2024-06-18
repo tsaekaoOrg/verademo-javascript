@@ -23,17 +23,7 @@ async function processTools(req, res) {
         const fortunes = fortunefile ? await fortune(fortunefile) : "";
         // req.host = host;
         const pingResult = host ? await ping(host) : "";
-        // if (host) {
-        //     ping(host, function(ping) {
-        //         return res.render('tools', {host, ping});   
-        //     })
-        // } else if (fortunefile) {
-        //     fortune(file, function(result) {
-        //         return res.render('tools', {result});   
-        //     })
-        // } else {
-        //     return res.render('tools');
-        // }
+
         return res.render('tools', {host, fortunes, ping : pingResult}); 
 
     }

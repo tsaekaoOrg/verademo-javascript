@@ -30,6 +30,7 @@ function ping(host) {
     console.log("Pinging " + host);
     try {
         const pingProcess = spawn('ping', ['-c', '1', host]);
+
         pingProcess.stdout.on('data', (data) => {
             output = data.toString();
             console.log(output);
@@ -45,11 +46,21 @@ function ping(host) {
 // Produces a fortune based on selection
 function fortune(file) {
     let output = "";
-    cmd = "/usr/games/fortune";
+    const cmd = "/usr/games/fortune";
     console.log("Fortune file: " + file);
     try {
+        const fortuneProcess = spawn(cmd, [file]);
+        fortuneProcess.stdout.on('data', (data) => {
+            output = data.toString();
+            console.log(output);
+            console.log("Exit code: " + fortuneProcess.exitCode);
+        });
 
-    } catch (err) {}
+    } catch (err) {
+        console.log("Error occured during fortune: ", err);
+        callback(err);
+    }
+    return output;
 }
 
 module.exports = {showTools, processTools, ping, fortune}

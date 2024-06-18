@@ -2,13 +2,13 @@ var express = require('express');
 
 class Comment  {
     constructor() {
-        var commentID = None;
-        var blabID = None;
-        var blabber = None;
-        var content = None;
-        var timestamp = None;
+        this.commentID = None;
+        this.blabID = None;
+        this.blabber = None;
+        this.content = None;
+        this.timestamp = None;
 
-        const date_format = "%b %d %Y";
+        this.date_format = "%b %d %Y";
     }
 
     async getCommentID() {

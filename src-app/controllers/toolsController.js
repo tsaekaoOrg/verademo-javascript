@@ -20,20 +20,21 @@ async function processTools(req, res) {
         var host = req.body.host;
         const fortunefile = req.body.fortunefile;
         console.log(host);
-        // file = fortunefile ? fortune(fortunefile) : "";
+        const fortunes = fortunefile ? await fortune(fortunefile) : "";
         // req.host = host;
-        // var pingResult = host ? ping(host) : "";
-        if (host) {
-            ping(host, function(ping) {
-                return res.render('tools', {host, ping});   
-            })
-        } else if (fortunefile) {
-            fortune(file, function(result) {
-                return res.render('tools', {result});   
-            })
-        } else {
-            return res.render('tools');
-        }
+        const pingResult = host ? await ping(host) : "";
+        // if (host) {
+        //     ping(host, function(ping) {
+        //         return res.render('tools', {host, ping});   
+        //     })
+        // } else if (fortunefile) {
+        //     fortune(file, function(result) {
+        //         return res.render('tools', {result});   
+        //     })
+        // } else {
+        //     return res.render('tools');
+        // }
+        return res.render('tools', {host, fortunes, ping : pingResult}); 
 
     }
     catch (err) {
@@ -42,22 +43,24 @@ async function processTools(req, res) {
     }
 }
 // Pings selected host based on user input, then outputs the results
-async function ping(host, callback) {
-    let output = "";
-    console.log("Pinging " + host);
-    try {
-        var pingProcess = spawn('ping', ['-c', '1', host]);
-        pingProcess.stdout.on('data', (data) => {
-            output = data.toString();
-            console.log(output);
-            console.log("Exit code: " + pingProcess.exitCode);
-            callback(output);
-        });
-    } catch (err) {
-        console.log("Error occured during ping: ", err);
-        callback(err);
-    }
-    return output;
+async function ping(host) {
+    return new Promise((resolve, reject) => {
+        let output = "";
+        console.log("Pinging " + host);
+        try {
+            var pingProcess = spawn('ping', ['-c', '1', host]);
+            pingProcess.stdout.on('data', (data) => {
+                output = data.toString();
+                console.log(output);
+                console.log("Exit code: " + pingProcess.exitCode);
+                resolve(output);
+            });
+        } catch (err) {
+            console.error("Error occured during ping: ", err);
+            output = "ping: unknown host " + host;
+            resolve(output);
+        }
+    });
 }
 
 // Produces a fortune based on selection

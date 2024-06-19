@@ -72,7 +72,7 @@ async function processLogin(req, res) {
 		try {
 			// Get the Database Connection
 			console.log("Creating the Database connection");
-			connect = await mariadb.createConnection(dbconnector.connectionParams);
+			connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 
 			/* START BAD CODE */
 			// Execute the query

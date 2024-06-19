@@ -22,6 +22,8 @@ router.route('/login')
   .get(userController.showLogin)
   .post(userController.processLogin)
 
+router.get('/logout', userController.processLogout)
+
 router.route('/register')
   .get(userController.showRegister)
   .post(userController.processRegister)
@@ -47,8 +49,8 @@ router.route('/tools')
   .post(toolsController.processTools)
 
 router.route('/reset')
-  .get(userController.showLogin)
-  .post(userController.processLogin)
+  .get(resetController.showReset)
+  .post(resetController.processReset)
 
 
 

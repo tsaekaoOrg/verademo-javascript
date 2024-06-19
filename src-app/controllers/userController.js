@@ -6,7 +6,7 @@ async function showLogin(req, res) {
     try {
         let target = req.query.target;
         let username = req.query.username;
-
+		
         if (req.session.username) {
 			console.log("User is already logged in - redirecting...");
             if (target) {
@@ -18,7 +18,7 @@ async function showLogin(req, res) {
 
         let user = createFromRequest(req);
 		if (user) {
-            req.session.user = user.username;
+            req.session.username = user.username;
 			console.log("User is remembered - redirecting...");
 			if (target) {
 				return res.redirect(target);
@@ -40,10 +40,13 @@ async function showLogin(req, res) {
 
 		console.log("Entering showLogin with username " + username + " and target " + target);
 
-        return res.render('login', {username, target});
+		res.locals.target = target
+		res.locals.username = username;
+
+		return res.render('login');
     }
     catch (err) {
-        console.log(err);
+        console.error(err.message);
         return res.status(500).json(err);
     }
 }
@@ -61,10 +64,10 @@ async function processLogin(req, res) {
         // Determine eventual redirect. Do this here in case we're already logged in
 		let nextView;
 		if (target) {
-			nextView = res.redirect(target);
+			nextView = 'res.redirect(target)';
 		} else {
 			// default to user's feed
-			nextView = res.redirect("feed");
+			nextView = 'res.redirect("feed")';
 		}
 
 		let connect = null;
@@ -80,7 +83,7 @@ async function processLogin(req, res) {
 			const sqlQuery = "select username, password, password_hint, created_at, last_login, real_name, blab_name from users where username='"
 					+ username + "';";
 			console.log("Execute the Statement");
-			const result = connect.query(sqlQuery);
+			const result = await connect.query(sqlQuery);
 			/* END BAD CODE */
 			/* START GOOD CODE
 			String sqlQuery = "select * from users where username=? and password=?;";
@@ -93,48 +96,45 @@ async function processLogin(req, res) {
 			ResultSet result = sqlStatement.executeQuery();
 			/* END GOOD CODE */
 
-
-
 			// Did we find exactly 1 user that matched?
-			if (result.first() && crypto.createHash('md5').update(password).digest("hex")) {
+			if (result.length == 1 && crypto.createHash('md5').update(result[0]['password']).digest("hex")) {
+				let user = result[0]
 				console.log("User Found.");
 				// Remember the username as a courtesy.
-				Utils.setUsernameCookie(response, result.getString("username"));
 				res.cookie('username', result.username);
 
 				// If the user wants us to auto-login, store the user details as a cookie.
 				if (remember != null) {
-					let currentUser = new User(result.getString("username"), result.getString("password_hint"),
-							result.getTimestamp("created_at"), result.getTimestamp("last_login"),
-							result.getString("real_name"), result.getString("blab_name"));
+					let currentUser = new User(user["username"], user["password_hint"],
+							user["created_at"], user["last_login"],
+							user["real_name"], user["blab_name"]);
 
-					UserFactory.updateInResponse(currentUser, response);
+					updateInResponse(currentUser, response);
 				}
 
-				Utils.setSessionUserName(req, response, result.getString("username"));
+				req.session.username = user["username"];
 
 				// Update last login timestamp
-				let update = connect.prepareStatement("UPDATE users SET last_login=NOW() WHERE username=?;");
-				update.setString(1, result.getString("username"));
-				update.execute();
+				let update = await connect.prepare("UPDATE users SET last_login=NOW() WHERE username=?;");
+				await update.execute([user['username']]);
 			} else {
 				// Login failed...
 				console.log("User Not Found");
-				model.addAttribute("error", "Login failed. Please try again.");
-				model.addAttribute("target", target);
-				nextView = "login";
+				res.locals.error = "Login failed. Please try again.";
+				res.locals.target = target;
+				nextView = "res.render('login')";
 			}
 		// } catch (SQLException exceptSql) {
 		// 	console.error(exceptSql);
 		// 	model.addAttribute("error", exceptSql.getMessage() + "<br/>" + displayErrorForWeb(exceptSql));
 		// 	model.addAttribute("target", target);
 		// 	nextView = "login";
-		// } catch (ClassNotFoundException cnfe) {
-		// 	console.error(cnfe);
-		// 	model.addAttribute("error", cnfe.getMessage());
-		// 	model.addAttribute("target", target);
+		} catch (err) {
+			console.error(err.message);
+			res.locals.error = err.message;
+			res.locals.target = target;
 
-		// } finally {
+		} finally {
 		// 	try {
 		// 		if (sqlStatement != null) {
 		// 			sqlStatement.close();
@@ -144,29 +144,23 @@ async function processLogin(req, res) {
 		// 		model.addAttribute("error", exceptSql.getMessage());
 		// 		model.addAttribute("target", target);
 		// 	}
-		// 	try {
-		// 		if (connect != null) {
-		// 			connect.close();
-		// 		}
-		// 	} catch (SQLException exceptSql) {
-		// 		console.error(exceptSql);
-		// 		model.addAttribute("error", exceptSql.getMessage());
-		// 		model.addAttribute("target", target);
-		// 	}
-		
-
-		// }
-		} catch (err) {
-			console.log(err);
-			return res.status(500).json(err);
+			try {
+				if (connect) {
+					connect.close();
+				}
+			} catch (err) {
+				console.error(err.message);
+				res.locals.error = err;
+				res.locals.target = target
+			}
 		}
 
 		// Redirect to the appropriate place based on login actions above
 		console.log("Redirecting to view: " + nextView);
-		return nextView;
+		return eval(nextView);
     }
     catch (err) {
-        console.log(err);
+        console.error(err.message);
         return res.status(500).json(err);
     }
 }
@@ -332,7 +326,7 @@ async function testFunc(req, res)
         conn.close();
     } catch(err){
         // Manage Errors
-        console.log(err);
+        console.error(err.message);
     } finally {
         // Close Connection
         //if(conn) 

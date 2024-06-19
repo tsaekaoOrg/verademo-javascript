@@ -2,8 +2,8 @@ const mariadb = require('mariadb');
 
 async function showLogin(req, res) {
     try {
-        const target = req.query.target;
-        const username = req.query.username;
+        let target = req.query.target;
+        let username = req.query.username;
 
         if (req.session.username) {
 			console.log("User is already logged in - redirecting...");
@@ -14,8 +14,8 @@ async function showLogin(req, res) {
             }
         }
 
-        let user = createFromRequest(httpRequest);
-		if (user != null) {
+        let user = createFromRequest(req);
+		if (user) {
             req.session.user = user.username;
 			console.log("User is remembered - redirecting...");
 			if (target) {
@@ -219,13 +219,66 @@ async function showRegisterFinish(req, res) {
 async function processRegisterFinish(req, res) {
 	console.log("Entering processRegisterFinish");
 
-	const username = req.body.username
-	const password = req.body.password
-	const cpassword = req.body.cpassword
-	const realName = req.body.realName
-	const blabName = req.body.blabName
+	const username = req.body.username;
+	const password = req.body.password;
+	const cpassword = req.body.cpassword;
+	const realName = req.body.realName;
+	const blabName = req.body.blabName;
+	let error;
 	
-	
+	if (password !== cpassword) {
+		console.log("Password and Confirm Password do not match");
+		error = "The Password and Confirm Password values do not match. Please try again.";
+	}
+
+	let connect;
+	let sqlStatement;
+
+	// try {
+	// 	// Get the Database Connection
+	// 	logger.info("Creating the Database connection");
+	// 	Class.forName("com.mysql.jdbc.Driver");
+	// 	connect = DriverManager.getConnection(Constants.create().getJdbcConnectionString());
+
+	// 	/* START EXAMPLE VULNERABILITY */
+	// 	// Execute the query
+	// 	String mysqlCurrentDateTime = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"))
+	// 			.format(Calendar.getInstance().getTime());
+	// 	StringBuilder query = new StringBuilder();
+	// 	query.append("insert into users (username, password, created_at, real_name, blab_name) values(");
+	// 	query.append("'" + username + "',");
+	// 	query.append("'" + BCrypt.hashpw(password, BCrypt.gensalt()) + "',");
+	// 	query.append("'" + mysqlCurrentDateTime + "',");
+	// 	query.append("'" + realName + "',");
+	// 	query.append("'" + blabName + "'");
+	// 	query.append(");");
+
+	// 	sqlStatement = connect.createStatement();
+	// 	sqlStatement.execute(query.toString());
+	// 	logger.info(query.toString());
+	// 	/* END EXAMPLE VULNERABILITY */
+
+	// 	emailUser(username);
+	// } catch (SQLException | ClassNotFoundException ex) {
+	// 	logger.error(ex);
+	// } finally {
+	// 	try {
+	// 		if (sqlStatement != null) {
+	// 			sqlStatement.close();
+	// 		}
+	// 	} catch (SQLException exceptSql) {
+	// 		logger.error(exceptSql);
+	// 	}
+	// 	try {
+	// 		if (connect != null) {
+	// 			connect.close();
+	// 		}
+	// 	} catch (SQLException exceptSql) {
+	// 		logger.error(exceptSql);
+	// 	}
+	// }
+
+	return res.redirect("login?username=" + username);
 
     // const pool = mariadb.createPool({
     //     host: process.env.DB_HOST,
@@ -234,6 +287,14 @@ async function processRegisterFinish(req, res) {
     //     database: process.env.DB_NAME,
     //     connectionLimit: 5
     // })
+}
+
+function emailUser(username) {
+
+}
+
+async function showProfile(req, res) {
+	
 }
 
 async function testFunc(req, res)
@@ -268,8 +329,8 @@ async function testFunc(req, res)
 }
 
 function createFromRequest(req) {
-    const cookie = req.cookie.user;
-    if (!cookie) {
+	const cookie = req.cookies.user;
+    if (cookie) {
         return null;
     }
     const user = JSON.parse(atob(cookie));
@@ -281,5 +342,13 @@ function updateInResponse(currentUser, res) {
     return res;
 }
 
-module.exports = { testFunc, showLogin, processLogin, showRegister, processRegister };
+module.exports = { 	
+	testFunc,
+	showLogin,
+	processLogin,
+	showRegister, 
+	processRegister, 
+	showRegisterFinish, 
+	processRegisterFinish 
+};
 

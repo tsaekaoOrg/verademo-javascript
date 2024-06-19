@@ -26,6 +26,10 @@ router.route('/register')
   .get(userController.showRegister)
   .post(userController.processRegister)
 
+router.route('/register-finish')
+  .get(userController.showRegisterFinish)
+  .post(userController.processRegisterFinish)
+
 router.route('/tools')
   .get(toolsController.showTools)
   .post(toolsController.processTools)

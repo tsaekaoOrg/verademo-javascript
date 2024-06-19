@@ -47,8 +47,8 @@ router.route('/tools')
   .post(toolsController.processTools)
 
 router.route('/reset')
-  .get(userController.showLogin)
-  .post(userController.processLogin)
+  .get(resetController.showReset)
+  .post(resetController.processReset)
 
 
 

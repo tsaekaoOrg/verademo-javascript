@@ -48,20 +48,13 @@
 		<div class="page-header">
 			<h3>Login</h3>
 		</div>
-<!--
-		<%
-			String error = (String) request.getAttribute("error");
-			if (null != error) {
-		%>
+
+		{{#if error}}
 		<div class="alert alert-danger" role="alert">
-			<%=error%>
+			{{error}}
 		</div>
+		{{/if}}
 
-		<%
-			}
-		%>
-
--->
 		<div class="row">
 			<div class="col-md-12">
 

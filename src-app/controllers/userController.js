@@ -72,8 +72,7 @@ async function processLogin(req, res) {
 		try {
 			// Get the Database Connection
 			console.log("Creating the Database connection");
-			console.log(dbconnector.connectionParams);
-			connect = await mariadb.createConnection(dbconnector.connectionParams);
+			connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 
 			/* START BAD CODE */
 			// Execute the query
@@ -344,7 +343,7 @@ async function testFunc(req, res)
 
 function createFromRequest(req) {
 	const cookie = req.cookies.user;
-    if (cookie) {
+    if (!cookie) {
         return null;
     }
     const user = JSON.parse(atob(cookie));

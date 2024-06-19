@@ -37,6 +37,7 @@ router.route('/blabbers')
 router.route('/profile')
   .get(userController.showProfile)
   .post(userController.processProfile)
+
 router.route('/register-finish')
   .get(userController.showRegisterFinish)
   .post(userController.processRegisterFinish)

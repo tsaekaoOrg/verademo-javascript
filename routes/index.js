@@ -22,6 +22,8 @@ router.route('/login')
   .get(userController.showLogin)
   .post(userController.processLogin)
 
+router.get('/logout', userController.processLogout)
+
 router.route('/register')
   .get(userController.showRegister)
   .post(userController.processRegister)

@@ -10,12 +10,12 @@
 <title>Register for Blab</title>
 
 <!-- Bootstrap core CSS -->
-<link href="resources/css/bootstrap.min.css" rel="stylesheet">
+<link href="css/bootstrap.min.css" rel="stylesheet">
 <!-- Bootstrap theme -->
-<link href="resources/css/bootstrap-theme.min.css" rel="stylesheet">
+<link href="css/bootstrap-theme.min.css" rel="stylesheet">
 
 <!-- Custom styles for this template -->
-<link href="resources/css/pwm.css" rel="stylesheet">
+<link href="css/pwm.css" rel="stylesheet">
 
 <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 <!--[if lt IE 9]>
@@ -36,7 +36,7 @@
 					<li role="presentation" class="active"><a href="register">Register</a></li>
 				</ul>
 			</nav>
-			<img src="resources/images/Tokyoship_Talk_icon.svg" height="100"
+			<img src="images/Tokyoship_Talk_icon.svg" height="100"
 				width="100">
 		</div>
 
@@ -49,17 +49,12 @@
 			<h3>Register</h3>
 		</div>
 
-		<%
-			String error = (String) request.getAttribute("error");
-			if (null != error) {
-		%>
+		{{#if error}}
 		<div class="alert alert-danger" role="alert">
-			<%=error%>
+			{{error}}
 		</div>
+		{{/if}}
 
-		<%
-			}
-		%>
 
 		<div class="row">
 			<div class="col-md-12">
@@ -77,9 +72,9 @@
 																		<tr>
 										<td>Username</td>
 										<td><div class="form-group">
-												<%= request.getSession().getAttribute("username") %>
+												{{username}}
 											</div>
-											<input type="hidden" name="username" value="{{ username }}"></td>
+											<input type="hidden" name="username" value={{username}}></td>
 									</tr>
 									<tr>
 										<td>Password</td>
@@ -127,7 +122,7 @@
 	<!-- Bootstrap core JavaScript
     ================================================== -->
 	<!-- Placed at the end of the document so the pages load faster -->
-	<script src="resources/js/jquery-1.11.2.min.js"></script>
-	<script src="resources/js/bootstrap.min.js"></script>
+	<script src="js/jquery-1.11.2.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
 </body>
 </html>

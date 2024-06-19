@@ -10,12 +10,12 @@
 <title>Blab Feed</title>
 
 <!-- Bootstrap core CSS -->
-<link href="resources/css/bootstrap.min.css" rel="stylesheet">
+<link href="/css/bootstrap.min.css" rel="stylesheet">
 <!-- Bootstrap theme -->
-<link href="resources/css/bootstrap-theme.min.css" rel="stylesheet">
+<link href="/css/bootstrap-theme.min.css" rel="stylesheet">
 
 <!-- Custom styles for this template -->
-<link href="resources/css/pwm.css" rel="stylesheet">
+<link href="/css/pwm.css" rel="stylesheet">
 
 <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 <!--[if lt IE 9]>
@@ -38,7 +38,7 @@
 					<li role="presentation"><a href="logout">Logout</a></li>
 				</ul>
 			</nav>
-			<img src="resources/images/Tokyoship_Talk_icon.svg" height="100"
+			<img src="/images/Tokyoship_Talk_icon.svg" height="100"
 				width="100">
 		</div>
 
@@ -50,11 +50,11 @@
 		<div class="page-header">
 			<h3>
 				Hi
-				<%=request.getAttribute("currentUser")%>, welcome to Blab-a-Gag
+				<!--<%=request.getAttribute("currentUser")%>,--> welcome to Blab-a-Gag
 			</h3>
 			<h4>The home of of witty one-liners</h4>
 		</div>
-
+<!--
 		<%
 			String error = (String) request.getAttribute("error");
 			if (null != error) {
@@ -67,7 +67,7 @@
 		<%
 			}
 		%>
-
+-->
 		<div class="row">
 			<div class="col-md-6">
 				<div class="detailBox">
@@ -76,6 +76,7 @@
 					</div>
 					<div id="feed" class="actionBox">
 						<ul class="commentList">
+							<!--
 							<%
 								@SuppressWarnings("unchecked")
 								List<Blab> feedBlabs = (List<Blab>) request.getAttribute("blabsByOthers");
@@ -102,6 +103,7 @@
 							<%
 								}
 							%>
+							-->
 						</ul>
 						<a href="#" onclick="getmore(this); return false;">Fetch more...</a>
 					</div>
@@ -125,6 +127,7 @@
 							</form>
 						</div>
 						<ul class="commentList">
+							<!--
 							<%
 								@SuppressWarnings("unchecked")
 								List<Blab> myBlabs = (List<Blab>) request.getAttribute("blabsByMe");
@@ -143,6 +146,7 @@
 							<%
 								}
 							%>
+							-->
 						</ul>
 					</div>
 				</div>
@@ -154,8 +158,8 @@
 	<!-- Bootstrap core JavaScript
     ================================================== -->
 	<!-- Placed at the end of the document so the pages load faster -->
-	<script src="resources/js/jquery-1.11.2.min.js"></script>
-	<script src="resources/js/bootstrap.min.js"></script>
+	<script src="/js/jquery-1.11.2.min.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
 
 	<!-- Fetch additional feed items -->
 	<script type="text/javascript">

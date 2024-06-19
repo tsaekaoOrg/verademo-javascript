@@ -289,7 +289,11 @@ function emailUser(username) {
 }
 
 async function showProfile(req, res) {
-	
+	res.render('profile');
+}
+
+async function processProfile(req, res) {
+	console.log('processing');
 }
 
 async function testFunc(req, res)
@@ -352,6 +356,8 @@ module.exports = {
 	showRegister, 
 	processRegister, 
 	showRegisterFinish, 
-	processRegisterFinish 
+	processRegisterFinish,
+	showProfile,
+	processProfile,
 };
 

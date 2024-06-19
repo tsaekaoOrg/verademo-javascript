@@ -1,5 +1,6 @@
 const mariadb = require('mariadb');
-const dbconnector = require('../utils/dbconnector.js')
+const crypto = require('crypto');
+const dbconnector = require('../utils/dbconnector.js');
 
 async function showLogin(req, res) {
     try {
@@ -68,69 +69,68 @@ async function processLogin(req, res) {
 
 		let connect = null;
 		let sqlStatement = null;
-		// try {
-		// 	// Get the Database Connection
-		// 	logger.info("Creating the Database connection");
-		// 	Class.forName("com.mysql.jdbc.Driver");
-		// 	connect = await mariadb.createConnection(dbconnector.connectionParams);
+		try {
+			// Get the Database Connection
+			console.log("Creating the Database connection");
+			connect = await mariadb.createConnection(dbconnector.connectionParams);
 
-		// 	/* START BAD CODE */
-		// 	// Execute the query
-		// 	logger.info("Creating the Statement");
-		// 	const sqlQuery = "select username, password, password_hint, created_at, last_login, real_name, blab_name from users where username='"
-		// 			+ username + "';";
-		// 	sqlStatement = connect.createStatement();
-		// 	logger.info("Execute the Statement");
-		// 	const result = sqlStatement.query(sqlQuery);
-		// 	/* END BAD CODE */
-		// 	/* START GOOD CODE
-		// 	String sqlQuery = "select * from users where username=? and password=?;";
-		// 	logger.info("Preparing the PreparedStatement");
-		// 	sqlStatement = connect.prepareStatement(sqlQuery);
-		// 	logger.info("Setting parameters for the PreparedStatement");
-		// 	sqlStatement.setString(1, username);
-		// 	sqlStatement.setString(2, password);
-		// 	logger.info("Executing the PreparedStatement");
-		// 	ResultSet result = sqlStatement.executeQuery();
-		// 	/* END GOOD CODE */
+			/* START BAD CODE */
+			// Execute the query
+			console.log("Creating the Statement");
+			const sqlQuery = "select username, password, password_hint, created_at, last_login, real_name, blab_name from users where username='"
+					+ username + "';";
+			console.log("Execute the Statement");
+			const result = connect.query(sqlQuery);
+			/* END BAD CODE */
+			/* START GOOD CODE
+			String sqlQuery = "select * from users where username=? and password=?;";
+			console.log("Preparing the PreparedStatement");
+			sqlStatement = connect.prepareStatement(sqlQuery);
+			console.log("Setting parameters for the PreparedStatement");
+			sqlStatement.setString(1, username);
+			sqlStatement.setString(2, password);
+			console.log("Executing the PreparedStatement");
+			ResultSet result = sqlStatement.executeQuery();
+			/* END GOOD CODE */
 
 
 
-		// 	// Did we find exactly 1 user that matched?
-		// 	if (result.first() && BCrypt.checkpw(password, result.getString("password"))) {
-		// 		logger.info("User Found.");
-		// 		// Remember the username as a courtesy.
-		// 		Utils.setUsernameCookie(response, result.getString("username"));
+			// Did we find exactly 1 user that matched?
+			if (result.first() && crypto.createHash('md5').update(password).digest("hex")) {
+				console.log("User Found.");
+				// Remember the username as a courtesy.
+				Utils.setUsernameCookie(response, result.getString("username"));
+				res.cookie('username', result.username);
 
-		// 		// If the user wants us to auto-login, store the user details as a cookie.
-		// 		if (remember != null) {
-		// 			let currentUser = new User(result.getString("username"), result.getString("password_hint"),
-		// 					result.getTimestamp("created_at"), result.getTimestamp("last_login"),
-		// 					result.getString("real_name"), result.getString("blab_name"));
+				// If the user wants us to auto-login, store the user details as a cookie.
+				if (remember != null) {
+					let currentUser = new User(result.getString("username"), result.getString("password_hint"),
+							result.getTimestamp("created_at"), result.getTimestamp("last_login"),
+							result.getString("real_name"), result.getString("blab_name"));
 
-		// 			UserFactory.updateInResponse(currentUser, response);
-		// 		}
+					UserFactory.updateInResponse(currentUser, response);
+				}
 
-		// 		Utils.setSessionUserName(req, response, result.getString("username"));
+				Utils.setSessionUserName(req, response, result.getString("username"));
 
-		// 		// Update last login timestamp
-		// 		PreparedStatement update = connect.prepareStatement("UPDATE users SET last_login=NOW() WHERE username=?;");
-		// 		update.setString(1, result.getString("username"));
-		// 		update.execute();
-		// 	} else {
-		// 		// Login failed...
-		// 		logger.info("User Not Found");
-		// 		model.addAttribute("error", "Login failed. Please try again.");
-		// 		model.addAttribute("target", target);
-		// 		nextView = "login";
-		// 	}
+				// Update last login timestamp
+				let update = connect.prepareStatement("UPDATE users SET last_login=NOW() WHERE username=?;");
+				update.setString(1, result.getString("username"));
+				update.execute();
+			} else {
+				// Login failed...
+				console.log("User Not Found");
+				model.addAttribute("error", "Login failed. Please try again.");
+				model.addAttribute("target", target);
+				nextView = "login";
+			}
 		// } catch (SQLException exceptSql) {
-		// 	logger.error(exceptSql);
+		// 	console.error(exceptSql);
 		// 	model.addAttribute("error", exceptSql.getMessage() + "<br/>" + displayErrorForWeb(exceptSql));
 		// 	model.addAttribute("target", target);
 		// 	nextView = "login";
 		// } catch (ClassNotFoundException cnfe) {
-		// 	logger.error(cnfe);
+		// 	console.error(cnfe);
 		// 	model.addAttribute("error", cnfe.getMessage());
 		// 	model.addAttribute("target", target);
 
@@ -140,7 +140,7 @@ async function processLogin(req, res) {
 		// 			sqlStatement.close();
 		// 		}
 		// 	} catch (SQLException exceptSql) {
-		// 		logger.error(exceptSql);
+		// 		console.error(exceptSql);
 		// 		model.addAttribute("error", exceptSql.getMessage());
 		// 		model.addAttribute("target", target);
 		// 	}
@@ -149,14 +149,20 @@ async function processLogin(req, res) {
 		// 			connect.close();
 		// 		}
 		// 	} catch (SQLException exceptSql) {
-		// 		logger.error(exceptSql);
+		// 		console.error(exceptSql);
 		// 		model.addAttribute("error", exceptSql.getMessage());
 		// 		model.addAttribute("target", target);
 		// 	}
+		
+
 		// }
+		} catch (err) {
+			console.log(err);
+			return res.status(500).json(err);
+		}
 
 		// Redirect to the appropriate place based on login actions above
-		logger.info("Redirecting to view: " + nextView);
+		console.log("Redirecting to view: " + nextView);
 		return nextView;
     }
     catch (err) {
@@ -199,7 +205,7 @@ async function processRegister(req, res)
 	// 		return "register-finish";
 	// 	}
 	// } catch (SQLException | ClassNotFoundException ex) {
-	// 	logger.error(ex);
+	// 	console.error(ex);
 	// }
 
     res.render('register');
@@ -231,7 +237,7 @@ async function processRegisterFinish(req, res) {
 
 	// try {
 	// 	// Get the Database Connection
-	// 	logger.info("Creating the Database connection");
+	// 	console.log("Creating the Database connection");
 	// 	Class.forName("com.mysql.jdbc.Driver");
 	// 	connect = DriverManager.getConnection(Constants.create().getJdbcConnectionString());
 
@@ -250,26 +256,26 @@ async function processRegisterFinish(req, res) {
 
 	// 	sqlStatement = connect.createStatement();
 	// 	sqlStatement.execute(query.toString());
-	// 	logger.info(query.toString());
+	// 	console.log(query.toString());
 	// 	/* END EXAMPLE VULNERABILITY */
 
 	// 	emailUser(username);
 	// } catch (SQLException | ClassNotFoundException ex) {
-	// 	logger.error(ex);
+	// 	console.error(ex);
 	// } finally {
 	// 	try {
 	// 		if (sqlStatement != null) {
 	// 			sqlStatement.close();
 	// 		}
 	// 	} catch (SQLException exceptSql) {
-	// 		logger.error(exceptSql);
+	// 		console.error(exceptSql);
 	// 	}
 	// 	try {
 	// 		if (connect != null) {
 	// 			connect.close();
 	// 		}
 	// 	} catch (SQLException exceptSql) {
-	// 		logger.error(exceptSql);
+	// 		console.error(exceptSql);
 	// 	}
 	// }
 

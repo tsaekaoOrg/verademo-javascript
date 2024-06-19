@@ -1,10 +1,13 @@
 const mariadb = require('mariadb');
 
-const connectionParams = {
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: process.env.DB_NAME,
+function getConnectionParams() {
+    return {
+        host: process.env.MARIADB_HOST,
+        port: process.env.MARIADB_PORT,
+        user: process.env.MARIADB_USER,
+        password: process.env.MARIADB_PASSWORD,
+        database: process.env.MARIADB_DATABASE_NAME,
+    }
 };
 
-module.exports = { connectionParams };
+module.exports = { getConnectionParams };

@@ -26,6 +26,18 @@ router.route('/register')
   .get(userController.showRegister)
   .post(userController.processRegister)
 
+router.route('/feed')
+  .get(blabController.showFeed)
+  .post(blabController.processFeed)
+
+router.route('/blabbers')
+  .get(blabController.showBlabbers)
+  .post(blabController.processBlabbers)
+
+router.route('/profile')
+  .get(userController.showProfile)
+  .post(userController.processProfile)
+
 router.route('/register-finish')
   .get(userController.showRegisterFinish)
   .post(userController.processRegisterFinish)

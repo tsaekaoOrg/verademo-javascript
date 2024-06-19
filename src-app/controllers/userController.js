@@ -98,7 +98,7 @@ async function processLogin(req, res) {
 
 			// Did we find exactly 1 user that matched?
 			if (result.length == 1 && crypto.createHash('md5').update(result[0]['password']).digest("hex")) {
-				let user = result[0]
+				let user = result[0];
 				console.log("User Found.");
 				// Remember the username as a courtesy.
 				res.cookie('username', result.username);
@@ -170,7 +170,16 @@ async function showPasswordHint(req, res) {
 }
 
 async function processLogout(req, res) {
+	console.log("Entering processLogout");
 
+	let type = req.query.type;
+
+	req.session.username = null;
+
+	let currentUser = null;
+	updateInResponse(currentUser, res);
+
+	return res.redirect('login')
 }
 
 async function showRegister(req, res) {
@@ -353,6 +362,7 @@ module.exports = {
 	testFunc,
 	showLogin,
 	processLogin,
+	processLogout,
 	showRegister, 
 	processRegister, 
 	showRegisterFinish, 

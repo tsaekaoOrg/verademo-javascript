@@ -339,7 +339,7 @@ async function testFunc(req, res)
 
 function createFromRequest(req) {
 	const cookie = req.cookies.user;
-    if (cookie) {
+    if (!cookie) {
         return null;
     }
     const user = JSON.parse(atob(cookie));

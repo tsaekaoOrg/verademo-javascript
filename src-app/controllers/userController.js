@@ -299,30 +299,36 @@ async function showProfile(req, res) {
 
 async function testFunc(req, res)
 {
-    let conn;
+    //let conn;
+    
+    const pool = mariadb.createPool({
+        host: 'mariadb',
+        port: 3306,
+        user: 'root',
+        password: '',
+        database: 'blab',
+    });
+    
     try {
         console.log("creating DB Connection");
-        conn = await mariadb.createConnection({
-            host: 'localhost',
-            user: 'root',
-            password: '',
-            database: "blabs",
-        });
+        let conn = await pool.getConnection();
+
+        //conn = await mariadb.createConnection(connectionURI)
         // Use Connection to get contacts data
         console.log("sending query")
-        rows = await conn.query("SELECT username,password FROM blabs.users");
-    
+        //const rows = await conn.query("SHOW DATABASES;");
+        const rows = await conn.query("SELECT username,password FROM blab.users;");
         //Print list of contacts
         for (i = 0; i < rows.length; i++) {
-           console.log(`${rows[i].username} ${rows[i].password}` );
+           console.log(rows[i] );
         }
-    } catch(err)
-    {
+        conn.close();
+    } catch(err){
         // Manage Errors
         console.log(err);
     } finally {
         // Close Connection
-        if(conn) conn.close();
+        //if(conn) 
     }
     return res.render('reset',{})
     

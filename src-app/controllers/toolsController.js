@@ -37,12 +37,27 @@ async function ping(host) {
     return new Promise((resolve, reject) => {
         let output = "";
         console.log("Pinging " + host);
+
+        const timer = setTimeout(() => {
+            console.log("Ping timed out");
+            output = "ping: unknown host " + host;
+            reject(output);
+        }, 5000);
         try {
             let pingProcess = spawn('ping', ['-c', '1', host]);
             pingProcess.stdout.on('data', (data) => {
                 output = data.toString();
                 console.log(output);
                 console.log("Exit code: " + pingProcess.exitCode);
+                resolve(output);
+            });
+            pingProcess.stderr.on('data', (data) => {
+                console.log("Error: " + data.toString());
+                reject(data.toString());
+            });
+            pingProcess.on('close', (code) => {
+                console.log("Exit code: " + code);
+                clearTimeout(timer);
                 resolve(output);
             });
         } catch (err) {
@@ -54,13 +69,24 @@ async function ping(host) {
 }
 
 // Produces a fortune based on selection
-function fortune(file) {
+function fortune(file, callback) {
     let output = "";
-    cmd = "/usr/games/fortune";
+    const cmd = "/usr/games/fortune";
     console.log("Fortune file: " + file);
     try {
+        const fortuneProcess = spawn(cmd, [file]);
+        fortuneProcess.stdout.on('data', (data) => {
+            output = data.toString();
+            console.log(output);
+            console.log("Exit code: " + fortuneProcess.exitCode);
+            callback(output);
+        });
 
-    } catch (err) {}
+    } catch (err) {
+        console.log("Error occured during fortune: ", err);
+        callback(err);
+    }
+    return output;
 }
 
 module.exports = {showTools, processTools, ping, fortune}

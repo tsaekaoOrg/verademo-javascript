@@ -72,6 +72,7 @@ async function processLogin(req, res) {
 		try {
 			// Get the Database Connection
 			console.log("Creating the Database connection");
+			console.log(dbconnector.connectionParams);
 			connect = await mariadb.createConnection(dbconnector.connectionParams);
 
 			/* START BAD CODE */
@@ -295,7 +296,11 @@ function emailUser(username) {
 }
 
 async function showProfile(req, res) {
-	
+	res.render('profile');
+}
+
+async function processProfile(req, res) {
+	console.log('processing');
 }
 
 async function testFunc(req, res)
@@ -358,6 +363,8 @@ module.exports = {
 	showRegister, 
 	processRegister, 
 	showRegisterFinish, 
-	processRegisterFinish 
+	processRegisterFinish,
+	showProfile,
+	processProfile,
 };
 

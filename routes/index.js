@@ -26,8 +26,27 @@ router.route('/register')
   .get(userController.showRegister)
   .post(userController.processRegister)
 
+router.route('/feed')
+  .get(userController.showLogin)
+  .post(userController.processLogin)
+
+router.route('/blabbers')
+  .get(userController.showLogin)
+  .post(userController.processLogin)
+
+router.route('/profile')
+  .get(userController.showLogin)
+  .post(userController.processLogin)
+
 router.route('/tools')
   .get(toolsController.showTools)
   .post(toolsController.processTools)
+
+router.route('/reset')
+  .get(userController.showLogin)
+  .post(userController.processLogin)
+
+
+
 
 module.exports = router;

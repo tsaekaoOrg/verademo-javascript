@@ -1,4 +1,5 @@
 const mariadb = require('mariadb');
+const dbconnector = require('../utils/dbconnector.js')
 
 async function showLogin(req, res) {
     try {
@@ -66,27 +67,21 @@ async function processLogin(req, res) {
 		}
 
 		let connect = null;
-		/* START BAD CODE */
 		let sqlStatement = null;
-		/* END BAD CODE */
-		/* START GOOD CODE
-		PreparedStatement sqlStatement = null;
-        /* END GOOD CODE */
 		// try {
 		// 	// Get the Database Connection
 		// 	logger.info("Creating the Database connection");
 		// 	Class.forName("com.mysql.jdbc.Driver");
-		// 	connect = DriverManager.getConnection(Constants.create().getJdbcConnectionString());
-
+		// 	connect = await mariadb.createConnection(dbconnector.connectionParams);
 
 		// 	/* START BAD CODE */
 		// 	// Execute the query
 		// 	logger.info("Creating the Statement");
-		// 	String sqlQuery = "select username, password, password_hint, created_at, last_login, real_name, blab_name from users where username='"
+		// 	const sqlQuery = "select username, password, password_hint, created_at, last_login, real_name, blab_name from users where username='"
 		// 			+ username + "';";
 		// 	sqlStatement = connect.createStatement();
 		// 	logger.info("Execute the Statement");
-		// 	ResultSet result = sqlStatement.executeQuery(sqlQuery);
+		// 	const result = sqlStatement.query(sqlQuery);
 		// 	/* END BAD CODE */
 		// 	/* START GOOD CODE
 		// 	String sqlQuery = "select * from users where username=? and password=?;";
@@ -109,7 +104,7 @@ async function processLogin(req, res) {
 
 		// 		// If the user wants us to auto-login, store the user details as a cookie.
 		// 		if (remember != null) {
-		// 			User currentUser = new User(result.getString("username"), result.getString("password_hint"),
+		// 			let currentUser = new User(result.getString("username"), result.getString("password_hint"),
 		// 					result.getTimestamp("created_at"), result.getTimestamp("last_login"),
 		// 					result.getString("real_name"), result.getString("blab_name"));
 
@@ -160,8 +155,8 @@ async function processLogin(req, res) {
 		// 	}
 		// }
 
-		// // Redirect to the appropriate place based on login actions above
-		// logger.info("Redirecting to view: " + nextView);
+		// Redirect to the appropriate place based on login actions above
+		logger.info("Redirecting to view: " + nextView);
 		return nextView;
     }
     catch (err) {

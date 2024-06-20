@@ -16,7 +16,7 @@ const users = [
         create("ben", "Ben", "Ben Stoll"),
         create("brian", "Brian", "Brian Pitta"),
         create("caitlin", "Caitlin", "Caitlin Johanson"),
-        create("christraut", "Chris Trautwein", "Chris Trautwein"),
+        create("christraut", "Chris Trautwein", "Chris Trautwein"),         
         create("christyson", "Chris Tyson", "Chris Tyson"),
         create("clint", "Clint", "Clint Pollock"),
         create("clyde", "Clyde", "Clyde Shtino"),
@@ -36,15 +36,13 @@ const users = [
         create("scottsim", "Scott Simpson", "Scott Simpson")
 ]
 
-function reset(req, res) {
-    if (req.method === "GET") {
-        return showReset(req,res);
-    }
-    else if (req.method === "POST") {
-        return processReset(req,res);
-    }
-    else {
-        const response = await axios.get
+function reset (req,res) {
+    if (req.method === 'GET') {
+        return showReset(req, res);
+    } else if (req.method === 'POST') {
+        return processReset(req, res);
+    } else {
+        const response;
     }
 }
 

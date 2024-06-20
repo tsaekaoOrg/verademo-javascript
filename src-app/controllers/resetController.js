@@ -1,3 +1,4 @@
+/*
 const users = [
     create("admin", "admin", "Mr. Administrator"),
 		create("john", "John", "John Smith"),
@@ -13,7 +14,7 @@ const users = [
         create("ben", "Ben", "Ben Stoll"),
         create("brian", "Brian", "Brian Pitta"),
         create("caitlin", "Caitlin", "Caitlin Johanson"),
-        create("christraut", "Chris Trautwein", "Chris Trautwein"),
+        create("christraut", "Chris Trautwein", "Chris Trautwein"),         
         create("christyson", "Chris Tyson", "Chris Tyson"),
         create("clint", "Clint", "Clint Pollock"),
         create("clyde", "Clyde", "Clyde Shtino"),
@@ -32,7 +33,7 @@ const users = [
         create("stuart", "Stuart", "Stuart Sessions"),
         create("scottsim", "Scott Simpson", "Scott Simpson")
 ]
-
+*/
 function showReset(req,res)
 {
     console.log("Entering showReset");
@@ -50,7 +51,7 @@ function processReset(req,res)
     }
     console.log("Entering processReset");
 
-
+/*
     
     // Drop existing tables and recreate from schema file
     // TODO: Implement Vulnerability (Shell Injection)
@@ -139,6 +140,8 @@ function processReset(req,res)
         logger.error(ex.sqlite_errorcode, ex.sqlite_errorname)
     except Exception as e:
         logger.error("Unexpected error", e)
+
+        */
 }
 
 module.exports = {

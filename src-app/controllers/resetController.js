@@ -1,3 +1,6 @@
+const fs = require('fs');
+
+
 const users = [
     create("admin", "admin", "Mr. Administrator"),
 		create("john", "John", "John Smith"),
@@ -33,6 +36,18 @@ const users = [
         create("scottsim", "Scott Simpson", "Scott Simpson")
 ]
 
+function reset(req, res) {
+    if (req.method === "GET") {
+        return showReset(req,res);
+    }
+    else if (req.method === "POST") {
+        return processReset(req,res);
+    }
+    else {
+        const response = await axios.get
+    }
+}
+
 function showReset(req,res)
 {
     console.log("Entering showReset");
@@ -62,7 +77,7 @@ async function processReset(req,res)
         // Adding the listeners
         console.log("Preparing the statement for adding users");
         const usersStatement = `INSERT INTO users (username, password, password_hint, created_at, last_login, real_name, blab_name)
-        VALUES ($1,$2,$3,$4, $5, $6,$7)`;
+        VALUES ($1,$2,$3,$4,$5,$6,$7)`;
 
         if (users[0].password == "21232f297a57a5a743894a0e4a801fc3") {
             console.log("Encryption successful!");
@@ -88,7 +103,43 @@ async function processReset(req,res)
                 }
             }
         }
-        // Commiting the transaction
-        await client.query('COMMIT')
-    } catch (e) {}
+        // Fetching blabs that are pre-loaded
+        console.log("Reading blabs from file");
+        const blabsContent = fs.readFile("blabs.txt");
+        // Adding blabs
+        console.log("Preparing the statement for adding blabs");
+        const blabsStatement = `INSERT INTO blabs (blabber, content, timestamp)
+        VALUES (?,?, datetime('now'))`;
+
+        for (let blabContent of blabsContent) {
+            const randomUserOffset = Math.floor(Math.random() * (users.length -1)) + 1;
+            const username = users[randomUserOffset].username;
+            console.log("Adding blab for " + username);
+        }
+
+        // Fetch comments
+        console.log("Reading comments from file");
+        const commentsContent = fs.readFile("comments.txt");
+        // Adding comments
+        console.log("Preparing the statement for adding comments");
+        const commentsStatement = `INSERT INTO comments (blabber, content, timestamp)
+        VALUES (?,?, datetime('now'))`;
+
+        for (let i = 0; i < blabsContent.length; i++) {
+            const count = Math.floor(Math.random() * 6);
+            for (let j = 0; j < count; j++) {
+                const randomUserOffset = Math.floor(Math.random() * (users.length -1)) + 1;
+                const username = users[randomUserOffset].username;
+                const commentNum = Math.floor(Math.random() * commentsContent.length);
+                const comment = commentsContent[commentNum];
+                console.log("Adding a comment from " + username + " on blab ID " + i);
+            }
+        }
+        console.log("Database Reset... Great Success!");
+  
+    } catch (e) {
+        console.error("Unexpected Error:", e);
+    }
+
+    res.redirect('/reset');
 }

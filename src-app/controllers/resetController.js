@@ -166,3 +166,5 @@ async function processReset(req,res)
 
     res.redirect('/reset');
 }
+
+module.exports = { showReset, processReset }

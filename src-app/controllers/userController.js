@@ -1,6 +1,7 @@
 const mariadb = require('mariadb');
 const crypto = require('crypto');
 const dbconnector = require('../utils/dbconnector.js');
+const moment = require('moment')
 
 async function showLogin(req, res) {
     try {
@@ -196,8 +197,8 @@ async function showRegister(req, res) {
 
 async function processRegister(req, res)
 {
-	const username = req.query.user;
-	req.session.username = username; // move this to the end of processRegisterFinish
+	const username = req.body.user;
+	res.locals.username = username;
 
 	console.log("Creating the Database connection");
 	try {
@@ -245,28 +246,28 @@ async function processRegisterFinish(req, res) {
 	try {
 		// Get the Database Connection
 		console.log("Creating the Database connection");
-		Class.forName("com.mysql.jdbc.Driver");
 		connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 
 		// /* START EXAMPLE VULNERABILITY */
 		// // Execute the query
-		// String mysqlCurrentDateTime = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"))
-		// 		.format(Calendar.getInstance().getTime());
-		// StringBuilder query = new StringBuilder();
-		// query.append("insert into users (username, password, created_at, real_name, blab_name) values(");
-		// query.append("'" + username + "',");
-		// query.append("'" + BCrypt.hashpw(password, BCrypt.gensalt()) + "',");
-		// query.append("'" + mysqlCurrentDateTime + "',");
-		// query.append("'" + realName + "',");
-		// query.append("'" + blabName + "'");
-		// query.append(");");
+		mysqlCurrentDateTime = moment().format("YYYY-MM-DD HH:mm:ss")
 
-		// sqlStatement = connect.createStatement();
-		// sqlStatement.execute(query.toString());
-		// console.log(query.toString());
+		let query = "insert into users (username, password, created_at, real_name, blab_name) values(";
+		query += "'" + username + "',";
+		query += "'" + crypto.createHash('md5').update(password).digest("hex") + "',";
+		query += "'" + mysqlCurrentDateTime + "',";
+		query += "'" + realName + "',";
+		query += "'" + blabName + "'";
+		query += ");";
+
+		console.log(query);
+		connect.query(query);
+
+		req.session.username = username;
+		
 		// /* END EXAMPLE VULNERABILITY */
 
-		emailUser(username);
+		// emailUser(username);
 	} catch (err) {
 		console.error(err);
 	} finally {

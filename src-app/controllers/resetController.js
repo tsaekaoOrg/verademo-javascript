@@ -94,4 +94,4 @@ async function processReset(req,res)
     } catch (e) {}
 }
 
-module.exports = {showReset,processReset}
+module.exports = { showReset, processReset }

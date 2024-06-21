@@ -343,19 +343,16 @@ async function testFunc(req, res)
 {
     let conn;
     
-    const pool = mariadb.createPool({
-        
-    });
     
     try {
         console.log("creating DB Connection");
-        let conn = await mariadb.createConnection({
+        conn = await mariadb.createConnection(/*{
 			host: process.env.MARIADB_HOST,
     		port: process.env.MARIADB_PORT,
         	user: process.env.MARIADB_USER,
         	password: process.env.MARIADB_PASSWORD,
         	database: process.env.MARIADB_DATABASE_NAME,
-		});
+		}*/dbconnector.getConnectionParams());
 
         //conn = await mariadb.createConnection(connectionURI)
         // Use Connection to get contacts data

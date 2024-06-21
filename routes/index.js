@@ -32,6 +32,13 @@ router.route('/feed')
   .get(blabController.showFeed)
   .post(blabController.processFeed)
 
+router.route('/morefeed')
+  .get(blabController.getMoreFeed)
+
+router.route('/blab')
+  .get(blabController.showBlab)
+  .post(blabController.processBlab)
+
 router.route('/blabbers')
   .get(blabController.showBlabbers)
   .post(blabController.processBlabbers)

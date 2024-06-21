@@ -70,23 +70,44 @@ async function ping(host) {
 
 // Produces a fortune based on selection
 function fortune(file, callback) {
-    let output = "";
-    const cmd = "/usr/games/fortune";
-    console.log("Fortune file: " + file);
-    try {
-        const fortuneProcess = spawn(cmd, [file]);
-        fortuneProcess.stdout.on('data', (data) => {
-            output = data.toString();
-            console.log(output);
-            console.log("Exit code: " + fortuneProcess.exitCode);
-            callback(output);
-        });
-
-    } catch (err) {
-        console.log("Error occured during fortune: ", err);
-        callback(err);
-    }
-    return output;
+    return new Promise((resolve, reject) => {
+        output = "";
+        const cmd = '/usr/bin/fortune ${file}';
+        console.log("Fortune file: " + file);
+        console.log("Command: " + cmd);
+        try {
+            console.log("After Try " + file);
+            console.log("After Try " + output);
+            let fortuneProcess = spawn(cmd, [file]);
+            fortuneProcess.stdout.on('data', (data) => {
+                output = data.toString();
+                console.log(output);
+                console.log("Exit code: " + fortuneProcess.exitCode);
+                resolve(output);
+            });
+            fortuneProcess.stderr.on('data', (data) => {
+                output = data.toString();
+                console.log(output);
+                console.log("Exit code: " + fortuneProcess.exitCode);
+                reject(data.toString());
+            });
+            fortuneProcess.on('close', (code) => {
+                if (code === 0) {
+                    console.log("Exit code: " + code);
+                    callback(output);
+                    resolve(output);
+                } else {
+                    console.log("Exit code: " + code);
+                    callback(output);
+                    reject(output);
+                }
+            });
+        } catch (err) {
+            console.log("Error occured during fortune: ", err);
+            callback(err);
+            reject(err);
+        }
+    });
 }
 
 module.exports = {showTools, processTools, ping, fortune}

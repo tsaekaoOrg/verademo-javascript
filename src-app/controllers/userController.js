@@ -85,7 +85,7 @@ async function processLogin(req, res) {
 			console.log("Execute the Statement");
 			const result = await connect.query(sqlQuery);
 			/* END BAD CODE */
-			/* START GOOD CODE
+			/* START GOOD CODE TODO
 			String sqlQuery = "select * from users where username=? and password=?;";
 			console.log("Preparing the PreparedStatement");
 			sqlStatement = connect.prepareStatement(sqlQuery);

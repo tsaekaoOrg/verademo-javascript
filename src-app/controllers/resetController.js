@@ -93,3 +93,5 @@ async function processReset(req,res)
         await client.query('COMMIT')
     } catch (e) {}
 }
+
+module.exports = {showReset,processReset}

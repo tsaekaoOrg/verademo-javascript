@@ -2,6 +2,7 @@ const mariadb = require('mariadb');
 const crypto = require('crypto');
 const dbconnector = require('../utils/dbconnector.js');
 const moment = require('moment')
+const Blabber = require('../models/Blabber.js').Blabber;
 
 async function showLogin(req, res) {
     try {
@@ -116,8 +117,8 @@ async function processLogin(req, res) {
 				req.session.username = user["username"];
 
 				// Update last login timestamp
-				let update = await connect.prepare("UPDATE users SET last_login=NOW() WHERE username=?;");
-				await update.execute([user['username']]);
+				sqlStatement = await connect.prepare("UPDATE users SET last_login=NOW() WHERE username=?;");
+				await sqlStatement.execute([user['username']]);
 			} else {
 				// Login failed...
 				console.log("User Not Found");
@@ -136,21 +137,21 @@ async function processLogin(req, res) {
 			res.locals.target = target;
 
 		} finally {
-		// 	try {
-		// 		if (sqlStatement != null) {
-		// 			sqlStatement.close();
-		// 		}
-		// 	} catch (SQLException exceptSql) {
-		// 		console.error(exceptSql);
-		// 		model.addAttribute("error", exceptSql.getMessage());
-		// 		model.addAttribute("target", target);
-		// 	}
 			try {
-				if (connect) {
-					connect.close();
+				if (sqlStatement) {
+					sqlStatement.close();
 				}
 			} catch (err) {
-				console.error(err.message);
+				console.error(err);
+				res.locals.error = err;
+				res.locals.target = target
+			}
+			try {
+				if (connect) {
+					connect.end();
+				}
+			} catch (err) {
+				console.error(err);
 				res.locals.error = err;
 				res.locals.target = target
 			}
@@ -280,7 +281,7 @@ async function processRegisterFinish(req, res) {
 		// }
 		try {
 			if (connect) {
-				connect.close();
+				connect.end();
 			}
 		} catch (err) {
 			console.error(err);
@@ -295,6 +296,42 @@ function emailUser(username) {
 }
 
 async function showProfile(req, res) {
+	let type = req.query.type;
+	console.log("Entering showProfile");
+	let username = req.session.username;
+
+	if (!username) {
+		console.log("User is not Logged In - redirecting...");
+		return res.redirect("login?target=profile");
+	}
+
+	let connect = null;
+	let myHecklers = null;
+	let myInfo = null;
+	let sqlMyHecklers = "SELECT users.username, users.blab_name, users.created_at "
+				+ "FROM users LEFT JOIN listeners ON users.username = listeners.listener "
+				+ "WHERE listeners.blabber=? AND listeners.status='Active';";
+
+	try {
+		console.log("Getting Database connection");
+		connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+		
+		console.log(sqlMyHecklers);
+		myHecklers = await connect.prepare(sqlMyHecklers);
+		let myHecklersResults = await myHecklers.execute([username]);
+		console.log(myHecklersResults)
+
+		let hecklers = [];
+		myHecklersResults.foreach((heckler) => {
+			Blabber heckler = new Blabber();
+			hecklers.push()
+		})
+		
+
+	} catch (err) {
+		console.error(err)
+	}
+
 	res.render('profile');
 }
 
@@ -329,7 +366,7 @@ async function testFunc(req, res)
         for (i = 0; i < rows.length; i++) {
            console.log(rows[i] );
         }
-        conn.close();
+        conn.end();
     } catch(err){
         // Manage Errors
         console.error(err.message);

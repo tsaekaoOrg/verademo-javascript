@@ -1,13 +1,13 @@
 
 class Blabber {
     constructor () {
-        this.id = none;
-        this.username = none;
-        this.realName = none;
-        this.BlabName = none;
-        this.createdDate = none;
-        this.numberListeners = none;
-        this.numberListenings = none;
+        this.id = null;
+        this.username = null;
+        this.realName = null;
+        this.BlabName = null;
+        this.createdDate = null;
+        this.numberListeners = null;
+        this.numberListenings = null;
 
         this.date_format = "%b %d %Y";
     }

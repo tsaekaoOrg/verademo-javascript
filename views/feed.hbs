@@ -49,25 +49,17 @@
 
 		<div class="page-header">
 			<h3>
-				Hi
-				<!--<%=request.getAttribute("currentUser")%>,--> welcome to Blab-a-Gag
+				Hi {{currentUser}}, welcome to Blab-a-Gag
 			</h3>
 			<h4>The home of of witty one-liners</h4>
 		</div>
-<!--
-		<%
-			String error = (String) request.getAttribute("error");
-			if (null != error) {
-		%>
-		
-		<div class="alert alert-danger" role="alert">
-			<%=error%>
-		</div>
 
-		<%
-			}
-		%>
--->
+			{{#if error}}
+		<div class="alert alert-danger" role="alert">
+			{{error}}
+		</div>
+			{{/if}}
+
 		<div class="row">
 			<div class="col-md-6">
 				<div class="detailBox">
@@ -76,34 +68,27 @@
 					</div>
 					<div id="feed" class="actionBox">
 						<ul class="commentList">
-							<!--
-							<%
-								@SuppressWarnings("unchecked")
-								List<Blab> feedBlabs = (List<Blab>) request.getAttribute("blabsByOthers");
+							{{#each blabsByOthers}}
 								
-								for (Blab post : feedBlabs) {
-							%>
 							<li>
 								<div>
 									<div class="commenterImage">
-										<img src="resources/images/<%= post.getAuthor().getUsername() %>.png" />
+										<img src="/images/{{this.author.username}}.png" />
 									</div>
 									<div class="commentText">
-										<p class=""><%= post.getContent() %></p>
+										<p class="">{{this.content}}</p>
 										<span class="date sub-text">
-											by <%= post.getAuthor().getBlabName() %> on <%= post.getPostDateString() %>
+											by {{ this.author.BlabName }} on {{this.postDate}} <!-- This should be post.getPostDateString() -->
 										</span>
 										<br/>
 										<span class="date sub-text">
-											<a href="blab?blabid=<%= post.getId() %>"><%= post.getCommentCount() %> Comments</a>
+											<a href="blab?blabid={{this.id}}">{{this.commentCount}} Comments</a>
 										</span>
 									</div>
 								</div>
 							</li>
-							<%
-								}
-							%>
-							-->
+							{{/each}}
+							
 						</ul>
 						<a href="#" onclick="getmore(this); return false;">Fetch more...</a>
 					</div>
@@ -127,26 +112,17 @@
 							</form>
 						</div>
 						<ul class="commentList">
-							<!--
-							<%
-								@SuppressWarnings("unchecked")
-								List<Blab> myBlabs = (List<Blab>) request.getAttribute("blabsByMe");
-								
-								for (Blab post : myBlabs) {
-							%>
+							{{#each blabsByMe}}
 							<li>
 								<div class="commentText">
-									<p class=""><%= post.getContent() %></p>
-									<span class="date sub-text">by you on <%= post.getPostDateString() %></span><br/>
+									<p class="">{{this.content}}</p>
+									<span class="date sub-text">by you on {{this.postDate}}</span><br/> <!-- This should be post.getPostDateString() -->
 									<span class="date sub-text">
-										<a href="blab?blabid=<%= post.getId() %>"><%= post.getCommentCount() %> Comments</a>
+										<a href="blab?blabid={{this.id}}">{{this.commentCount}} Comments</a> <!-- commentCount currently returns null-->
 									</span>
 								</div>
 							</li>
-							<%
-								}
-							%>
-							-->
+							{{/each}}
 						</ul>
 					</div>
 				</div>

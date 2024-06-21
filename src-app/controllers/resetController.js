@@ -1,4 +1,17 @@
 const fs = require('fs');
+const axios = require('axios');
+
+
+function create(username, password, realName) {
+    return {
+        username: username,
+        password:  password,
+        realName: realName,
+        dateCreated: new Date(),
+        lastLogin: new Date(),
+        blabName: username
+    }
+}
 
 
 const users = [
@@ -36,13 +49,28 @@ const users = [
         create("scottsim", "Scott Simpson", "Scott Simpson")
 ]
 
-function reset (req,res) {
+
+async function reset (req,res) {
     if (req.method === 'GET') {
         return showReset(req, res);
     } else if (req.method === 'POST') {
         return processReset(req, res);
     } else {
-        const response;
+        try {
+            const response = await axios.get('http://localhost/', {
+                auth: {
+                    username: 'thiswaskevinsidea',
+                    password:  'hardcode'
+                },
+                validateStatus: function (status) {
+                    return true; 
+                }
+            })
+            return res.send(response.data);
+        } catch (err) {
+            console.error(err.message);
+            return res.status(500).send('Error occured during HTTP request');
+        }
     }
 }
 
@@ -66,9 +94,7 @@ async function processReset(req,res)
     // Drop existing tables and recreate from schema file
     // TODO: Implement Vulnerability (Shell Injection)
     // https://docs.python.org/2/library/subprocess.html#frequently-used-arguments
-    manage = os.path.join(os.path.dirname(__file__), '../../manage.py')
-    subprocess.run(["python3",manage,"flush","--noinput"], check=True)
-
+    
     try {
         console.log("Getting Database connection...");
         await users.connect();
@@ -134,7 +160,6 @@ async function processReset(req,res)
             }
         }
         console.log("Database Reset... Great Success!");
-  
     } catch (e) {
         console.error("Unexpected Error:", e);
     }

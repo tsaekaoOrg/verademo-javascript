@@ -1,5 +1,6 @@
 const fs = require('fs');
 const axios = require('axios');
+const mariadb = require('mariadb');
 
 
 function create(username, password, realName) {
@@ -12,7 +13,6 @@ function create(username, password, realName) {
         blabName: username
     }
 }
-
 
 const users = [
     create("admin", "admin", "Mr. Administrator"),
@@ -48,6 +48,14 @@ const users = [
         create("stuart", "Stuart", "Stuart Sessions"),
         create("scottsim", "Scott Simpson", "Scott Simpson")
 ]
+
+const pool = mariadb.createPool({
+    host: '127.0.0.1',
+    port: '3306',
+    user: 'admin',
+    password: 'admin',
+    database: 'users'
+});
 
 
 async function reset (req,res) {
@@ -94,10 +102,10 @@ async function processReset(req,res)
     // Drop existing tables and recreate from schema file
     // TODO: Implement Vulnerability (Shell Injection)
     // https://docs.python.org/2/library/subprocess.html#frequently-used-arguments
-    
+    let connection;
     try {
         console.log("Getting Database connection...");
-        await users.connect();
+        connection = await pool.getConnection();
         // Adding the listeners
         console.log("Preparing the statement for adding users");
         const usersStatement = `INSERT INTO users (username, password, password_hint, created_at, last_login, real_name, blab_name)
@@ -106,11 +114,11 @@ async function processReset(req,res)
         if (users[0].password == "21232f297a57a5a743894a0e4a801fc3") {
             console.log("Encryption successful!");
         }
-        for (let users of users) {
+        for (let user of users) {
             console.log("Adding user " + users.username);
             await client.query(usersStatement, [
                 user.username, user.password, user.password_hint, user.created_at,
-                user.last_login, user.real_name, user.blab_name
+                user.lastLogin, user.realName, user.blabName
             ]);
         }
         console.log("Preparing the statement for adding listeners");
@@ -139,6 +147,7 @@ async function processReset(req,res)
             const randomUserOffset = Math.floor(Math.random() * (users.length -1)) + 1;
             const username = users[randomUserOffset].username;
             console.log("Adding blab for " + username);
+            await connection.query(blabsStatement, [username, blabContent]);
         }
 
         // Fetch comments
@@ -157,14 +166,17 @@ async function processReset(req,res)
                 const commentNum = Math.floor(Math.random() * commentsContent.length);
                 const comment = commentsContent[commentNum];
                 console.log("Adding a comment from " + username + " on blab ID " + i);
+                await connection.query(commentsStatement, [username, comment]);
             }
         }
         console.log("Database Reset... Great Success!");
     } catch (e) {
         console.error("Unexpected Error:", e);
+    } finally {
+        if (connection) connection.release();
     }
 
     res.redirect('/reset');
 }
 
-module.exports = { showReset, processReset }
+module.exports = { showReset, processReset };

@@ -2,11 +2,11 @@ var express = require('express');
 
 class Comment  {
     constructor() {
-        this.commentID = None;
-        this.blabID = None;
-        this.blabber = None;
-        this.content = None;
-        this.timestamp = None;
+        this.commentID = null;
+        this.blabID = null;
+        this.blabber = null;
+        this.content = null;
+        this.timestamp = null;
 
         this.date_format = "%b %d %Y";
     }

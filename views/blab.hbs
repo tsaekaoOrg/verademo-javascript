@@ -82,31 +82,22 @@
 							</form>
 						</div>
 						<ul class="commentList">
-							<!--
-							<%
-								@SuppressWarnings("unchecked")
-								List<Comment> comments = (ArrayList<Comment>) request.getAttribute("comments");
-								
-								for (Comment comment : comments) {
-							%>
+							{{#each comments}}
 							<li>
 								<div>
 									<div class="commenterImage">
-										<img src="resources/images/<%= comment.getAuthor().getUsername() %>.png" />
+										<img src="/images/{{ this.blabber.username }}.png" />
 									</div>
 									<div class="blockquote">
 										<p class="">
-											"<%= comment.getContent() %>"
+											"{{ this.content }}"
 										</p>
-										<span class="date sub-text">by <%= comment.getAuthor().getBlabName() %>
-											on <%= comment.getTimestampString() %></span><br>
+										<span class="date sub-text">by {{ this.blabber.BlabName }}
+											on {{ this.timestamp }}</span><br>
 									</div>
 								</div>
 							</li>
-							<%
-								}
-							%>
-							-->
+							{{/each}}
 						</ul>
 					</div>
 				</div>

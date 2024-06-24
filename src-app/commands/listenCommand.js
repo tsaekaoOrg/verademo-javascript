@@ -1,30 +1,38 @@
-var BlabberCommand = require('./blabberCommand');
 
-class ListenCommand extends BlabberCommand {
-    constructor(cursor, username) {
-        logger.info("Listen command");
-        super();
-        this.cursor = cursor;
+class ListenCommand{
+
+    constructor(connect, username) {
+        console.log("Listen command");
+        this.connect = connect;
         this.username = username;
     }
 
-    async execute(BlabberUsername) {
-        let sqlQuery = `INSERT INTO listeners (blabber, listener) VALUES ('${BlabberUsername}', '${this.username}');`;
-        this.logger.info(sqlQuery);
+    async execute(blabberUsername) {
+        let sqlQuery = "INSERT INTO listeners (blabber, listener, status) values (?, ?, 'Active');";
+		console.log(sqlQuery);
+		let action;
+		try {
+			action = await this.connect.prepare(sqlQuery);
+			await action.execute([blabberUsername,this.username]);
 
-        try {
-            await this.cursor.execute(sqlQuery);
-            this.logger.info(sqlQuery);
-            const result = await this.cursor.execute(sqlQuery);
-            
-            const event = `${this.username} started listening to ${BlabberUsername}`;
-            let sqlQuery = `INSERT INTO listeners (blabber, event) VALUES ('${BlabberUsername}', '${this.event}');`;
-            this.logger.info(sqlQuery);
-            await this.cursor.execute(sqlQuery);
+			sqlQuery = "SELECT blab_name FROM users WHERE username = '" + blabberUsername + "'";
+			console.log(sqlQuery);
+			let result = await this.connect.query(sqlQuery);
+			if (result.length > 0 )        
+            {
+                /* START EXAMPLE VULNERABILITY */
+			    let event = this.username + " started listening to " + blabberUsername + " (" + result[0].blab_name + ")";
+			    sqlQuery = "INSERT INTO users_history (blabber, event) VALUES (\"" + this.username + "\", \"" + event + "\")";
+			    console.log(sqlQuery);
+			    await this.connect.query(sqlQuery);
+			    /* END EXAMPLE VULNERABILITY */
+            }
 
-        } catch (e) {
-            logger.error("Unexpected Error:", e);
-        }
+			
+		} catch (err) {
+			// TODO Auto-generated catch block
+			console.error(err);
+		}
     }
 }
 module.exports = ListenCommand;

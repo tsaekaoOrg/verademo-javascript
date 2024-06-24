@@ -4,6 +4,10 @@ const pyformat = require('pyformat');
 const dbconnector = require('../utils/dbconnector.js');
 var Blab = require('../models/Blab');
 var Blabber = require('../models/Blabber');
+var Comment = require('../models/Comment');
+const { nextDay } = require('date-fns');
+const IgnoreCommand = require('../commands/IgnoreCommand');
+const ListenCommand = require('../commands/ListenCommand.js');
 
 //require('../models/Blab.js')
 
@@ -213,7 +217,7 @@ async function processFeed(req, res){
 async function showBlab(req,res)
 {
     blabid = req.query.blabid;
-    nextView = 'feed';
+    nextView = 'res.redirect("feed");';
 	console.log("Entering showBlab");
 
 	username = req.session.username;
@@ -273,7 +277,7 @@ async function showBlab(req,res)
             }
             res.locals['comments'] = comments
 
-            nextView = 'blab';
+            nextView = 'res.render("blab");';
         }
 
     } catch (ex) {
@@ -294,17 +298,15 @@ async function showBlab(req,res)
             console.error(exceptSql);
         }
     }
-    //Hacky way to get blab to show up
-    if(nextView=='feed')
-        return res.redirect('feed');
-    return res.render('blab');
+
+    return eval(nextView);
 }
 
 async function processBlab(req,res)
 {
     const comment = req.body.comment;
     const blabid = req.body.blabid;
-    nextView = "feed";
+    nextView = 'res.redirect("feed");';
     console.log("Entering processBlab");
 
     username = req.session.username;
@@ -331,7 +333,7 @@ async function processBlab(req,res)
         //addComment.setTimestamp(4, new Timestamp(now.getTime()));
 
         console.log("Executing the addComment Prepared Statement");
-        let addCommentResult = await addComment.execute([blabid,username,comment,now.getTime()]);
+        let addCommentResult = await addComment.execute([blabid,username,comment,null]); //Change null to datetime
 
         // If there is a record...
         if (addCommentResult) {
@@ -339,7 +341,7 @@ async function processBlab(req,res)
             res.locals["error"] = "Failed to add comment";
         }
 
-        nextView = "blab?blabid=" + blabid;
+        nextView = 'res.redirect("blab?blabid="' + blabid+');';
     } catch (ex) {
         console.error(ex);
     } finally {
@@ -359,17 +361,153 @@ async function processBlab(req,res)
         }
     }
 
-    return res.redirect(nextView);
+    return eval(nextView);
     
 }
 
 async function showBlabbers(req,res){
-    res.render('blabbers');
+    
+    let sort = req.query.sort;
+    
+    if (sort == null || sort.isEmpty()) {
+        sort = "blab_name ASC";
+    }
+
+    let nextView = 'res.redirect("feed");';
+    console.log("Entering showBlabbers");
+
+    const username = req.session.username;
+    // Ensure user is logged in
+    if (username == null) {
+        console.log("User is not Logged In - redirecting...");
+        return res.redirect("login?target=blabbers");
+    }
+
+    console.log("User is Logged In - continuing... UA=" + req.headers["User-Agent"] + " U=" + username);
+
+    let connect = null;
+    let blabberQuery = null;
+
+    /* START EXAMPLE VULNERABILITY */
+    const blabbersSql = "SELECT users.username," + " users.blab_name," + " users.created_at,"
+            + " SUM(if(listeners.listener=?, 1, 0)) as listeners,"
+            + " SUM(if(listeners.status='Active',1,0)) as listening"
+            + " FROM users LEFT JOIN listeners ON users.username = listeners.blabber"
+            + " WHERE users.username NOT IN (\"admin\",?)" + " GROUP BY users.username" + " ORDER BY " + sort + ";";
+
+    try {
+        console.log("Getting Database connection");
+        // Get the Database Connection
+        connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+        // Find the Blabbers
+        console.log(blabbersSql);
+        blabberQuery = await connect.prepare(blabbersSql);
+        let blabbersResults = await blabberQuery.execute([username,username]);
+        /* END EXAMPLE VULNERABILITY */
+
+        let blabbers = [];
+        for (result of blabbersResults) {
+            let blabber = new Blabber();
+            blabber.setBlabName(result['blab_name']);
+            blabber.setUsername(result['username']);
+            blabber.setCreatedDate(result['created_at']);
+            blabber.setNumberListeners(result['listeners']);
+            blabber.setNumberListening(result['listening']);
+
+            blabbers.push(blabber);
+        }
+        res.locals["blabbers"] = blabbers;
+
+        nextView = 'res.render("blabbers");';
+
+    } catch (err) {
+        console.error(err);
+    } finally {
+        try {
+            if (blabberQuery != null) {
+                blabberQuery.close();
+            }
+        } catch (exceptSql) {
+            console.error(exceptSql);
+        }
+        try {
+            if (connect != null) {
+                connect.close();
+            }
+        } catch (exceptSql) {
+            console.error(exceptSql);
+        }
+    }
+
+    return eval(nextView);
 }
 
 async function processBlabbers(req,res){
-    console.log();
+    const blabberUsername = req.body.blabberUsername;
+    const command = req.body.command;
+    let nextView = 'res.redirect("feed");';
+    console.log("Entering processBlabbers");
+
+    const username = req.session.username;
+    // Ensure user is logged in
+    if (username == null) {
+        console.log("User is not Logged In - redirecting...");
+        return res.redirect("login?target=blabbers");
+    }
+
+    console.log("User is Logged In - continuing... UA=" + req.headers["User-Agent"] + " U=" + username);
+
+    if (command == null) {
+        console.log("Empty command provided...");
+        return nextView = res.redirect("login?target=blabbers");
+    }
+
+    console.log("blabberUsername = " + blabberUsername);
+    console.log("command = " + command);
+
+    let connect = null;
+    let action = null;
+
+    try {
+        console.log("Getting Database connection");
+        // Get the Database Connection
+        connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+
+        /* START EXAMPLE VULNERABILITY */
+        let module = String(ucfirst(command)) + "Command";
+        const cmdClass = eval(module);
+        let cmdObj = new cmdClass(connect, username);
+        await cmdObj.execute(blabberUsername);
+        /* END EXAMPLE VULNERABILITY */
+
+        nextView = 'res.redirect("blabbers");';
+
+    } catch (err) {
+        console.error(err);
+    } finally {
+        try {
+            if (action != null) {
+                action.close();
+            }
+        } catch (exceptSql) {
+            console.error(exceptSql);
+        }
+        try {
+            if (connect != null) {
+                connect.close();
+            }
+        } catch (exceptSql) {
+            console.error(exceptSql);
+        }
+    }
+    return eval(nextView);
 }
+
+function ucfirst(string)
+{
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 
 module.exports = {
     showBlabbers,

@@ -7,7 +7,7 @@ class Blabber {
         this.BlabName = null;
         this.createdDate = null;
         this.numberListeners = null;
-        this.numberListenings = null;
+        this.numberListening = null;
 
         this.date_format = "%b %d %Y";
     }
@@ -48,11 +48,11 @@ class Blabber {
     async setNumberListeners(newNumberListeners) {
         this.numberListeners = newNumberListeners;
     }
-    async getNumberListenings() {
-        return this.numberListenings;
+    async getNumberListening() {
+        return this.numberListening;
     }
-    async setNumberListenings(newNumberListenings) {
-        this.numberListenings = newNumberListenings;
+    async setNumberListening(newNumberListening) {
+        this.numberListening = newNumberListening;
     }
 }
 

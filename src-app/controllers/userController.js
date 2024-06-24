@@ -14,14 +14,14 @@ async function showLogin(req, res) {
         let target = req.query.target;
         let username = req.query.username;
 		
-        // if (req.session.username) {
-		// 	console.log("User is already logged in - redirecting...");
-        //     if (target) {
-        //         return res.redirect(target);
-        //     } else {
-        //         return res.redirect('feed');
-        //     }
-        // }
+        if (req.session.username) {
+			console.log("User is already logged in - redirecting...");
+            if (target) {
+                return res.redirect(target);
+            } else {
+                return res.redirect('feed');
+            }
+        }
 
         let user = await createFromRequest(req);
 		if (user) {

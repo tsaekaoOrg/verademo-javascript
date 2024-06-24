@@ -6,6 +6,7 @@ const Blabber = require('../models/Blabber.js');
 const fs = require('fs');
 const path = require('path');
 const image_dir = path.join(__dirname, '../../resources/images/');
+const User = require('../utils/User.js')
 
 
 async function showLogin(req, res) {
@@ -13,14 +14,14 @@ async function showLogin(req, res) {
         let target = req.query.target;
         let username = req.query.username;
 		
-        if (req.session.username) {
-			console.log("User is already logged in - redirecting...");
-            if (target) {
-                return res.redirect(target);
-            } else {
-                return res.redirect('feed');
-            }
-        }
+        // if (req.session.username) {
+		// 	console.log("User is already logged in - redirecting...");
+        //     if (target) {
+        //         return res.redirect(target);
+        //     } else {
+        //         return res.redirect('feed');
+        //     }
+        // }
 
         let user = await createFromRequest(req);
 		if (user) {
@@ -111,11 +112,11 @@ async function processLogin(req, res) {
 
 				// If the user wants us to auto-login, store the user details as a cookie.
 				if (remember != null) {
-					let currentUser = new User(user["username"], user["password_hint"],
+					let currentUser = new User.User(user["username"], user["password_hint"],
 							user["created_at"], user["last_login"],
 							user["real_name"], user["blab_name"]);
 
-					await updateInResponse(currentUser, response);
+					await updateInResponse(currentUser, res);
 				}
 
 				req.session.username = user["username"];
@@ -152,7 +153,7 @@ async function processLogin(req, res) {
 			}
 			try {
 				if (connect) {
-					connect.end();
+					connect.close();
 				}
 			} catch (err) {
 				console.error(err);
@@ -285,7 +286,7 @@ async function processRegisterFinish(req, res) {
 		// }
 		try {
 			if (connect) {
-				connect.end();
+				connect.close();
 			}
 		} catch (err) {
 			console.error(err);
@@ -367,7 +368,7 @@ async function showProfile(req, res) {
 		}
 		try {
 			if (connect) {
-				connect.end();
+				connect.close();
 			}
 		} catch (err) {
 			console.error(err);
@@ -378,7 +379,207 @@ async function showProfile(req, res) {
 }
 
 async function processProfile(req, res) {
-	console.log('processing');
+	console.log("Entering processProfile");
+
+	const realName = req.body.realName;
+	const blabName = req.body.blabName;
+	const username = req.body.username;
+	const file = req.files[0];
+
+	let sessionUsername = req.session.username;
+	if (!sessionUsername) {
+		console.log("User is not Logged In - redirecting...");
+		return res.redirect("login?target=profile");
+	}
+
+	console.log("User is Logged In - continuing... UA=" + req.get("user-agent") + " U=" + sessionUsername);
+
+	let oldUsername = sessionUsername;
+	let connect = null;
+	let update = null;
+	try {
+		console.log("Getting Database connection");
+		connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+
+		console.log("Preparing the update Prepared Statement");
+		update = await connect.prepare("UPDATE users SET real_name=?, blab_name=? WHERE username=?;");
+		
+		console.log("Executing the update Prepared Statement");
+		let updateResult = await update.execute([realName, blabName, sessionUsername]);
+		
+		if (updateResult.affectedRows != 1) {
+			res.status(500);
+			return "{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}";
+		}
+	} catch (err) {
+		console.error(err);
+	} finally {
+		try {
+			if (update) {
+				update.close();
+			}
+		} catch (err) {
+			console.log(err);
+		}
+		try {
+			if (connect) {
+				connect.close();
+			}
+		} catch (err) {
+			console.log(err);
+		}
+	}
+
+	// Rename profile image if username changes
+	if (!(username == oldUsername)) {
+		// Check if username exists
+		let exists = false;
+		newUsername = username.toLowerCase();
+		try {
+			console.log("Getting Database connection");
+			connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+
+			console.log("Preparing the duplicate username check Prepared Statement");
+			sqlStatement = await connect.prepare("SELECT username FROM users WHERE username=?");
+			let result = await sqlStatement.execute([newUsername]);
+			if (result.length != 0) {
+				console.info("Username: " + username + " already exists. Try again.");
+				exists = true;
+			}
+		} catch (err) {
+			console.error(err);
+		} finally {
+			try {
+				if (sqlStatement) {
+					sqlStatement.close();
+				}
+			} catch (err) {
+				console.error(err);
+			}
+			try {
+				if (connect) {
+					connect.close();
+				} 
+			} catch (err) {
+				console.error(err);	
+			}
+		}
+		if (exists) {
+			res.status(409);
+			return "{\"message\": \"<script>alert('That username already exists. Please try another.');</script>\"}";
+		}
+
+		// Attempt to update username
+		oldUsername = oldUsername.toLowerCase();
+		let sqlUpdateQueries = [];
+		let renamed = false;
+		try {
+			console.log("Getting Database connection");
+			connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+
+			let sqlStrQueries = ["UPDATE users SET username=? WHERE username=?",
+								 "UPDATE blabs SET blabber=? WHERE blabber=?",
+								 "UPDATE comments SET blabber=? WHERE blabber=?",
+								 "UPDATE listeners SET blabber=? WHERE blabber=?",
+								 "UPDATE listeners SET listener=? WHERE listener=?",
+							  	 "UPDATE users_history SET blabber=? WHERE blabber=?"];
+			
+			try {
+				await connect.beginTransaction();
+				try {
+					for (query of sqlStrQueries) {
+						console.log("Preparing the Prepared Statement: " + query)
+						sqlUpdateQueries.push(await connect.prepare(query));
+					}
+
+					for (statement of sqlUpdateQueries) {
+						await statement.execute([newUsername, oldUsername]);
+					}
+
+					await connect.commit();
+				} catch (err) {
+					console.error("Error loading data, reverting changes: ", err);
+         			await connect.rollback();
+				}
+			} catch (err) {
+				console.error("Error starting a transaction: ", err);
+			}
+
+			oldImage = await getProfileImageFromUsername(oldUsername);
+			if (oldImage) {
+				extension = oldImage.substring(oldImage.lastIndexOf("."));
+
+				console.log ("Renaming profile image from " + oldImage + " to " + newUsername + extension);
+				oldName = image_dir + oldImage;
+				newName = image_dir + newUsername + extension;
+
+				await fs.rename(oldName, newName, (err) => { if (err) throw err; });
+			}
+			renamed = true;
+		} catch (err) {
+			console.error(err);
+		} finally {
+			try {
+				if (sqlUpdateQueries) {
+					for (statement of sqlUpdateQueries) {
+						statement.close();
+					}
+				}
+			} catch (err) {
+				console.error(err);
+			}
+			try {
+				if (connect) {
+					connect.close();
+				}
+			} catch (err) {
+				console.error(err);
+			}
+		}
+		if (!renamed) {
+			res.status(500);
+			return "{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}";
+		}
+
+		// Update all session and cookie logic
+		req.session.username = username;
+		res.cookie('username', username);
+
+		// Update remem ber me functionality
+		let currentUser = await createFromRequest(req);
+		if (currentUser) {
+			currentUser.username = username;
+			updateInResponse(currentUser, res);
+		}
+	}
+
+	// Update user profile image
+	if (file) {
+		let oldImage = await getProfileImageFromUsername(username);
+		if (oldImage) {
+			fs.unlink(image_dir + oldImage, (err) => { if (err) throw err; });
+		}
+
+		try {
+			let extension = file.filename.substring(file.filename.lastIndexOf("."));
+			let filepath = image_dir + username + extension;
+
+			console.log("Saving new profile image: " + filepath);
+
+			fs.rename(file.path, filepath, (err) => { if (err) throw err; })
+		} catch (err) {
+			console.error(err);
+		}
+
+	}
+
+	let msg = `Successfully changed values!\\\\nusername: ${username.toLowerCase()}\\\\nReal Name: ${realName}\\\\nBlab Name: ${blabName}`;
+	let response = `{\"values\": {\"username\": \"${username.toLowerCase()}\", \"realName\": \"${realName}\", \"blabName\": \"${blabName}\"}, \"message\": \"<script>alert('`
+			+ msg + `');</script>\"}`;
+
+	// return res.status(200).send(response);
+	return response;
+
 }
 
 async function testFunc(req, res)
@@ -405,7 +606,7 @@ async function testFunc(req, res)
         for (i = 0; i < rows.length; i++) {
            console.log(rows[i] );
         }
-        conn.end();
+        conn.close();
     } catch(err){
         // Manage Errors
         console.error(err.message);

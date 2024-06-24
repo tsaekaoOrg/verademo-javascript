@@ -5,6 +5,18 @@ const resetController = require('../src-app/controllers/resetController.js');
 const blabController = require('../src-app/controllers/blabController.js');
 const userController = require('../src-app/controllers/userController.js');
 const router = express.Router();
+const path = require('path');
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, '../resources/images'));
+  },
+  filename: (req, file, cb) => {
+    cb(null, 'temp_' + file.originalname);
+  },
+});
+const upload = multer({ storage : storage });
 
 /* GET home page. */
 // router.get('/', function(req, res, next) {
@@ -45,7 +57,7 @@ router.route('/blabbers')
 
 router.route('/profile')
   .get(userController.showProfile)
-  .post(userController.processProfile)
+  .post(upload.any(), userController.processProfile)
 
 router.route('/register-finish')
   .get(userController.showRegisterFinish)

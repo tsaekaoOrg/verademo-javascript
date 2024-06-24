@@ -2,9 +2,11 @@ var createError = require('http-errors');
 var express = require('express');
 
 var path = require('path');
+var axios = require('axios');
 var mariadb = require('mariadb')
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const Handlebars = require('hbs')
 var session = require('express-session');
 var indexRouter = require('./routes/index');
 var dotenv = require('dotenv');
@@ -17,6 +19,15 @@ const PORT = process.env.PORT || '3000';
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
+
+//Creating hbs helper function
+Handlebars.registerHelper('eq', function(a, b) {
+  if (a==b)
+    {
+      return true;
+    }
+  return false;
+});
 
 app.use(logger('dev'));
 app.use(express.json());

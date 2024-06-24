@@ -10,12 +10,12 @@
 <title>Blab</title>
 
 <!-- Bootstrap core CSS -->
-<link href="resources/css/bootstrap.min.css" rel="stylesheet">
+<link href="/css/bootstrap.min.css" rel="stylesheet">
 <!-- Bootstrap theme -->
-<link href="resources/css/bootstrap-theme.min.css" rel="stylesheet">
+<link href="/css/bootstrap-theme.min.css" rel="stylesheet">
 
 <!-- Custom styles for this template -->
-<link href="resources/css/pwm.css" rel="stylesheet">
+<link href="/css/pwm.css" rel="stylesheet">
 
 <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 <!--[if lt IE 9]>
@@ -38,7 +38,7 @@
 					<li role="presentation"><a href="logout">Logout</a></li>
 				</ul>
 			</nav>
-			<img src="resources/images/Tokyoship_Talk_icon.svg" height="100"
+			<img src="/images/Tokyoship_Talk_icon.svg" height="100"
 				width="100">
 		</div>
 
@@ -48,23 +48,18 @@
 	<div class="container theme-showcase" role="main">
 
 		<div class="page-header">
-			<h4><%= request.getAttribute("blab_name") %> says...</h4>
+			<h4>{{blab_name}} says...</h4>
 		</div>
 		<div>
 			<blockquote>
-				<h3><%= request.getAttribute("content") %></h3>
+				<h3>{{content}}</h3>
 			</blockquote>
 		</div>
-		<%
-			String error = (String) request.getAttribute("error");
-			if (error != null) {
-		%>
+		{{#if error}}
 		<div class="alert alert-danger" role="alert">
-			<%= error %>
+			{{error}}
 		</div>
-		<%
-			}
-		%>
+			{{/if}}
 
 		<div class="row">
 			<div class="col-md-6">
@@ -83,33 +78,26 @@
 									<button class="btn btn-default">Add</button>
 								</div>
 								<input type="hidden" name="blabid"
-									value="<%=request.getAttribute("blabid")%>">
+									value="{{ blabid }}">
 							</form>
 						</div>
 						<ul class="commentList">
-							<%
-								@SuppressWarnings("unchecked")
-								List<Comment> comments = (ArrayList<Comment>) request.getAttribute("comments");
-								
-								for (Comment comment : comments) {
-							%>
+							{{#each comments}}
 							<li>
 								<div>
 									<div class="commenterImage">
-										<img src="resources/images/<%= comment.getAuthor().getUsername() %>.png" />
+										<img src="/images/{{ this.blabber.username }}.png" />
 									</div>
 									<div class="blockquote">
 										<p class="">
-											"<%= comment.getContent() %>"
+											"{{ this.content }}"
 										</p>
-										<span class="date sub-text">by <%= comment.getAuthor().getBlabName() %>
-											on <%= comment.getTimestampString() %></span><br>
+										<span class="date sub-text">by {{ this.blabber.BlabName }}
+											on {{ this.timestamp }}</span><br>
 									</div>
 								</div>
 							</li>
-							<%
-								}
-							%>
+							{{/each}}
 						</ul>
 					</div>
 				</div>
@@ -124,7 +112,7 @@
 	<!-- Bootstrap core JavaScript
     ================================================== -->
 	<!-- Placed at the end of the document so the pages load faster -->
-	<script src="resources/js/jquery-1.11.2.min.js"></script>
-	<script src="resources/js/bootstrap.min.js"></script>
+	<script src="/js/jquery-1.11.2.min.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
 </body>
 </html>

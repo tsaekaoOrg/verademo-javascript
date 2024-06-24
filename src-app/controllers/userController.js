@@ -341,7 +341,7 @@ async function showProfile(req, res) {
 		userHistoryResult = await connect.query(sqlMyEvents);
 
 		userHistoryResult.forEach((event) => {
-			events.add(event[0]);
+			events.push(event[0]);
 		})
 
 		let sql = "SELECT username, real_name, blab_name FROM users WHERE username = '" + username + "'";
@@ -408,8 +408,8 @@ async function processProfile(req, res) {
 		let updateResult = await update.execute([realName, blabName, sessionUsername]);
 		
 		if (updateResult.affectedRows != 1) {
-			res.status(500);
-			return "{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}";
+			await res.set('content-type', 'application/json');
+			return res.status(500).send("{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}");
 		}
 	} catch (err) {
 		console.error(err);
@@ -465,8 +465,8 @@ async function processProfile(req, res) {
 			}
 		}
 		if (exists) {
-			res.status(409);
-			return "{\"message\": \"<script>alert('That username already exists. Please try another.');</script>\"}";
+			await res.set('content-type', 'application/json');
+			return res.status(409).send("{\"message\": \"<script>alert('That username already exists. Please try another.');</script>\"}");
 		}
 
 		// Attempt to update username
@@ -513,7 +513,7 @@ async function processProfile(req, res) {
 				oldName = image_dir + oldImage;
 				newName = image_dir + newUsername + extension;
 
-				await fs.rename(oldName, newName, (err) => { if (err) throw err; });
+				fs.rename(oldName, newName, (err) => { if (err) throw err; });
 			}
 			renamed = true;
 		} catch (err) {
@@ -537,19 +537,19 @@ async function processProfile(req, res) {
 			}
 		}
 		if (!renamed) {
-			res.status(500);
-			return "{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}";
+			await res.set('content-type', 'application/json');
+			return res.status(500).send("{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}");
 		}
 
 		// Update all session and cookie logic
 		req.session.username = username;
 		res.cookie('username', username);
 
-		// Update remem ber me functionality
+		// Update remember me functionality
 		let currentUser = await createFromRequest(req);
 		if (currentUser) {
 			currentUser.username = username;
-			updateInResponse(currentUser, res);
+			await updateInResponse(currentUser, res);
 		}
 	}
 
@@ -561,7 +561,7 @@ async function processProfile(req, res) {
 		}
 
 		try {
-			let extension = file.filename.substring(file.filename.lastIndexOf("."));
+			let extension = await file.filename.substring(file.filename.lastIndexOf("."));
 			let filepath = image_dir + username + extension;
 
 			console.log("Saving new profile image: " + filepath);
@@ -577,8 +577,8 @@ async function processProfile(req, res) {
 	let response = `{\"values\": {\"username\": \"${username.toLowerCase()}\", \"realName\": \"${realName}\", \"blabName\": \"${blabName}\"}, \"message\": \"<script>alert('`
 			+ msg + `');</script>\"}`;
 
-	// return res.status(200).send(response);
-	return response;
+	await res.set('content-type', 'application/json');
+	return res.status(200).send(response);
 
 }
 

@@ -14,6 +14,7 @@ COPY package-lock.json package-lock.json
 
 #Install dependencies
 RUN npm install
+RUN npm install express axios
 
 #Copy rest of source files
 COPY . .

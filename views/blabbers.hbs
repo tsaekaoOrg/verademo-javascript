@@ -51,19 +51,13 @@
 			<h4>Choose Blabbers to Listen to</h4>
 		</div>
 		<div></div>
-		<!--
-		<%
-			String error = (String) request.getAttribute("error");
-			if (null != error) {
-		%>
-		<div class="alert alert-danger" role="alert">
-			<%=error%>
-		</div>
 
-		<%
-			}
-		%>
--->
+		{{#if error}}
+		<div class="alert alert-danger" role="alert">
+			{{error}}
+		</div>
+			{{/if}}
+
 		<div class="row">
 			<div class="col-md-12">
 				<div class="detailBox">
@@ -84,43 +78,34 @@
 								</tr>
 							</thead>
 							<tbody>
-								<!--
-								<%
-									@SuppressWarnings("unchecked")
-									ArrayList<Blabber> blabbers = (ArrayList<Blabber>) request.getAttribute("blabbers");
-
-									for (Blabber blabber : blabbers) {
-								%>
-
+								
+								{{#each blabbers}}
 								<tr>
 									<td class="commenterImage">
-										<img src="resources/images/<%= blabber.getUsername() %>.png" />
+										<img src="/images/{{this.username}}.png" />
 									</td>
 									<td class="commenterName">
-										<%= blabber.getBlabName() %>
+										{{this.BlabName}}
 									</td>
 									<td class="commenterJoinDate">
-										<%= blabber.getCreatedDateString() %>
+										{{this.createdDate}}
 									</td>
 									<td class="commenterListening">
-										&nbsp;<%= blabber.getNumberListening() %>&nbsp;
+										&nbsp;{{ this.numberListening }}&nbsp;
 									</td>
 									<td>
 										<form class="form-inline" role="form" method="POST"
 											action="blabbers">
 											<input type="hidden" name="blabberUsername"
-												value="<%= HtmlUtils.htmlEscape(blabber.getUsername()) %>" />
+												value={{ this.username }} />
 											<input type="hidden" name="command"
-												value="<%=(blabber.getNumberListeners() == 1 ? "ignore" : "listen")%>" />
+												value={{#if (eq this.numberListeners 1)}}ignore{{else}}listen{{/if}} />
 											<input type="submit" class="btn btn-default pull-right" name="button"
-												value="<%=(blabber.getNumberListeners() == 1 ? "Ignore" : "Listen")%>" />
+												value={{#if (eq this.numberListeners 1)}}Ignore{{else}}Listen{{/if}} />
 										</form>
 									</td>
 								</tr>
-								<%
-									}
-								%>
-								-->
+								{{/each}}
 							</tbody>
 						</table>
 					</div>

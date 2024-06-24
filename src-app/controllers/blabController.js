@@ -210,12 +210,157 @@ async function processFeed(req, res){
     return res.redirect(nextView);
 }
 
-async function showBlab(req,res){
+async function showBlab(req,res)
+{
+    blabid = req.query.blabid;
+    nextView = 'feed';
+	console.log("Entering showBlab");
 
+	username = req.session.username;
+    // Ensure user is logged in
+    if (username == null) {
+        console.log("User is not Logged In - redirecting...");
+        return res.redirect("login?target=profile");
+    }
+
+    console.log("User is Logged In - continuing... UA=" + req.headers["User-Agent"] + " U=" + username);
+
+    let connect = null;
+    let blabDetails = null;
+    let blabComments = null;
+    blabDetailsSql = "SELECT blabs.content, users.blab_name "
+            + "FROM blabs INNER JOIN users ON blabs.blabber = users.username " + "WHERE blabs.blabid = ?;";
+
+    blabCommentsSql = "SELECT users.username, users.blab_name, comments.content, comments.timestamp "
+            + "FROM comments INNER JOIN users ON comments.blabber = users.username "
+            + "WHERE comments.blabid = ? ORDER BY comments.timestamp DESC;";
+
+    try {
+        console.log("Getting Database connection");
+        connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+
+        // Find the Blabs that this user listens to
+        console.log("Preparing the blabDetails Prepared Statement");
+        blabDetails = await connect.prepare(blabDetailsSql);
+        console.log("Executing the blabDetails Prepared Statement");
+        blabDetailsResults = await blabDetails.execute(blabid);
+
+        // If there is a record...
+        for (item of blabDetailsResults) {
+            // Get the blab contents
+            res.locals['content'] = item['content'];
+            res.locals['blab_name'] = item['blab_name'];
+            res.locals['blabid'] = blabid;
+            // Now lets get the comments...
+            console.log("Preparing the blabComments Prepared Statement");
+            blabComments = await connect.prepare(blabCommentsSql);
+            console.log("Executing the blabComments Prepared Statement");
+            blabCommentsResults = await blabComments.execute(blabid);
+
+            // Store them in the model
+            comments = [];
+            for (item of blabCommentsResults) {
+                let author = new Blabber();
+                author.setUsername(item['username']);
+                author.setBlabName(item['blab_name']);
+
+                let comment = new Comment();
+                comment.setContent(item['content']);
+                comment.setTimestamp(item['timestamp']);
+                comment.setAuthor(author);
+
+                comments.push(comment);
+            }
+            res.locals['comments'] = comments
+
+            nextView = 'blab';
+        }
+
+    } catch (ex) {
+        console.error(ex);
+    } finally {
+        try {
+            if (blabDetails != null) {
+                blabDetails.close();
+            }
+        } catch (exceptSql) {
+            console.error(exceptSql);
+        }
+        try {
+            if (connect != null) {
+                connect.close();
+            }
+        } catch (exceptSql) {
+            console.error(exceptSql);
+        }
+    }
+    //Hacky way to get blab to show up
+    if(nextView=='feed')
+        return res.redirect('feed');
+    return res.render('blab');
 }
 
-async function processBlab(req,res){
+async function processBlab(req,res)
+{
+    const comment = req.body.comment;
+    const blabid = req.body.blabid;
+    nextView = "feed";
+    console.log("Entering processBlab");
 
+    username = req.session.username;
+    // Ensure user is logged in
+    if (username == null) {
+        console.log("User is not Logged In - redirecting...");
+        return res.redirect("login?target=feed");
+    }
+
+    console.log("User is Logged In - continuing... UA=" + req.headers["User-Agent"] + " U=" + username);
+    let connect = null;
+    let addComment = null;
+    let addCommentSql = "INSERT INTO comments (blabid, blabber, content, timestamp) values (?, ?, ?, ?);";
+
+    try {
+        console.log("Getting Database connection");
+        // Get the Database Connection
+        connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+
+        const now = new Date();
+        //
+        console.log("Preparing the addComment Prepared Statement");
+        addComment = await connect.prepare(addCommentSql);
+        //addComment.setTimestamp(4, new Timestamp(now.getTime()));
+
+        console.log("Executing the addComment Prepared Statement");
+        let addCommentResult = await addComment.execute([blabid,username,comment,now.getTime()]);
+
+        // If there is a record...
+        if (addCommentResult) {
+            // failure
+            res.locals["error"] = "Failed to add comment";
+        }
+
+        nextView = "blab?blabid=" + blabid;
+    } catch (ex) {
+        console.error(ex);
+    } finally {
+        try {
+            if (addComment != null) {
+                addComment.close();
+            }
+        } catch (exceptSql) {
+            console.error(exceptSql);
+        }
+        try {
+            if (connect != null) {
+                connect.close();
+            }
+        } catch (exceptSql) {
+            console.error(exceptSql);
+        }
+    }
+
+    return res.redirect(nextView);
+    
 }
 
 async function showBlabbers(req,res){

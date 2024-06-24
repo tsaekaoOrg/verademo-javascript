@@ -2,6 +2,11 @@ const mariadb = require('mariadb');
 const crypto = require('crypto');
 const dbconnector = require('../utils/dbconnector.js');
 const moment = require('moment')
+const Blabber = require('../models/Blabber.js');
+const fs = require('fs');
+const path = require('path');
+const image_dir = path.join(__dirname, '../../resources/images/');
+
 
 async function showLogin(req, res) {
     try {
@@ -17,7 +22,7 @@ async function showLogin(req, res) {
             }
         }
 
-        let user = createFromRequest(req);
+        let user = await createFromRequest(req);
 		if (user) {
             req.session.username = user.username;
 			console.log("User is remembered - redirecting...");
@@ -110,14 +115,14 @@ async function processLogin(req, res) {
 							user["created_at"], user["last_login"],
 							user["real_name"], user["blab_name"]);
 
-					updateInResponse(currentUser, response);
+					await updateInResponse(currentUser, response);
 				}
 
 				req.session.username = user["username"];
 
 				// Update last login timestamp
-				let update = await connect.prepare("UPDATE users SET last_login=NOW() WHERE username=?;");
-				await update.execute([user['username']]);
+				sqlStatement = await connect.prepare("UPDATE users SET last_login=NOW() WHERE username=?;");
+				await sqlStatement.execute([user['username']]);
 			} else {
 				// Login failed...
 				console.log("User Not Found");
@@ -136,21 +141,21 @@ async function processLogin(req, res) {
 			res.locals.target = target;
 
 		} finally {
-		// 	try {
-		// 		if (sqlStatement != null) {
-		// 			sqlStatement.close();
-		// 		}
-		// 	} catch (SQLException exceptSql) {
-		// 		console.error(exceptSql);
-		// 		model.addAttribute("error", exceptSql.getMessage());
-		// 		model.addAttribute("target", target);
-		// 	}
 			try {
-				if (connect) {
-					connect.close();
+				if (sqlStatement) {
+					sqlStatement.close();
 				}
 			} catch (err) {
-				console.error(err.message);
+				console.error(err);
+				res.locals.error = err;
+				res.locals.target = target
+			}
+			try {
+				if (connect) {
+					connect.end();
+				}
+			} catch (err) {
+				console.error(err);
 				res.locals.error = err;
 				res.locals.target = target
 			}
@@ -184,7 +189,7 @@ async function processLogout(req, res) {
 	req.session.username = null;
 
 	let currentUser = null;
-	updateInResponse(currentUser, res);
+	await updateInResponse(currentUser, res);
 
 	return res.redirect('login')
 }
@@ -280,7 +285,7 @@ async function processRegisterFinish(req, res) {
 		// }
 		try {
 			if (connect) {
-				connect.close();
+				connect.end();
 			}
 		} catch (err) {
 			console.error(err);
@@ -295,6 +300,80 @@ function emailUser(username) {
 }
 
 async function showProfile(req, res) {
+	let type = req.query.type;
+	console.log("Entering showProfile");
+	let username = req.session.username;
+
+	if (!username) {
+		console.log("User is not Logged In - redirecting...");
+		return res.redirect("login?target=profile");
+	}
+
+	let connect = null;
+	let myHecklers = null;
+	let myInfo = null;
+	let sqlMyHecklers = "SELECT users.username, users.blab_name, users.created_at "
+				+ "FROM users LEFT JOIN listeners ON users.username = listeners.listener "
+				+ "WHERE listeners.blabber=? AND listeners.status='Active';";
+
+	try {
+		console.log("Getting Database connection");
+		connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+		
+		console.log(sqlMyHecklers);
+		myHecklers = await connect.prepare(sqlMyHecklers);
+		let myHecklersResults = await myHecklers.execute([username]);
+
+		let hecklers = [];
+		myHecklersResults.forEach((heckler) => {
+			let blabber = new Blabber();
+			blabber.setUsername(heckler[0]);
+			blabber.setBlabName(heckler[1]);
+			blabber.setCreatedDate(heckler[2]);
+			hecklers.push(blabber);
+		})
+		
+		let events = [];
+		let sqlMyEvents = "select event from users_history where blabber=\"" + username
+				+ "\" ORDER BY eventid DESC; ";
+		console.log(sqlMyEvents);
+		userHistoryResult = await connect.query(sqlMyEvents);
+
+		userHistoryResult.forEach((event) => {
+			events.add(event[0]);
+		})
+
+		let sql = "SELECT username, real_name, blab_name FROM users WHERE username = '" + username + "'";
+		console.log(sql);
+		myInfo = await connect.prepare(sql);
+		let myInfoResults = await myInfo.execute();
+
+		res.locals.hecklers = hecklers;
+		res.locals.events = events;
+		res.locals.username = myInfoResults[0]['username'];
+		res.locals.image = await getProfileImageFromUsername(myInfoResults[0]['username']);
+		res.locals.realName = myInfoResults[0]['real_name'];
+		res.locals.blabName = myInfoResults[0]['blab_name'];
+
+	} catch (err) {
+		console.error(err)
+	} finally {
+		try {
+			if (myHecklers) {
+				myHecklers.close();
+			}
+		} catch (err) {
+			console.error(err);
+		}
+		try {
+			if (connect) {
+				connect.end();
+			}
+		} catch (err) {
+			console.error(err);
+		}
+	}
+
 	res.render('profile');
 }
 
@@ -326,7 +405,7 @@ async function testFunc(req, res)
         for (i = 0; i < rows.length; i++) {
            console.log(rows[i] );
         }
-        conn.close();
+        conn.end();
     } catch(err){
         // Manage Errors
         console.error(err.message);
@@ -338,7 +417,7 @@ async function testFunc(req, res)
     
 }
 
-function createFromRequest(req) {
+async function createFromRequest(req) {
 	const cookie = req.cookies.user;
     if (!cookie) {
         return null;
@@ -347,9 +426,19 @@ function createFromRequest(req) {
     return user;
 }
 
-function updateInResponse(currentUser, res) {
+async function updateInResponse(currentUser, res) {
     res.cookie('user', btoa(JSON.stringify(currentUser)));
     return res;
+}
+
+async function getProfileImageFromUsername(username) {
+	let files = fs.readdirSync(image_dir);
+	for (const filename of files) {
+		if (filename.startsWith(username + '.')) {
+			return filename;
+		}
+	}
+	return null;
 }
 
 module.exports = { 	

@@ -50,19 +50,13 @@
 		<div class="page-header">
 			<h4>Profile</h4>
 		</div>
-		<!--
-		<%
-			String error = (String) request.getAttribute("error");
-			if (null != error) {
-		%>
-		<div class="alert alert-danger" role="alert">
-			<%=error%>
-		</div>
 
-		<%
-			}
-		%>
--->
+		{{#if error}}
+		<div class="alert alert-danger" role="alert">
+			{{error}}
+		</div>
+		{{/if}}
+
 		<div class="row">
 
 			<div class="col-md-6">
@@ -77,14 +71,14 @@
 								<tbody>
 									<tr>
 										<td class="commenterImage">
-											<img id="profileImage" src="resources/images/<%= request.getAttribute("image") %>" />
+											<img id="profileImage" src="images/{{image}}" />
 										</td>
 										<td>
 											<div class="form-group">
 												<input type="file" class="form-control" name="file" />
 											</div>
 											<div>
-												<a href="downloadprofileimage?image=<%= request.getAttribute("username") %>.png">
+												<a href="downloadprofileimage?image={{username}}.png">
 													Download Current Image
 												</a>
 											</div>
@@ -95,7 +89,7 @@
 										<td>
 											<div class="form-group">
 												<input type="text" class="form-control" name="realName"
-													value="<%=request.getAttribute("realName")%>" />
+													value="{{realName}}" />
 											</div>
 										</td>
 									</tr>
@@ -104,7 +98,7 @@
 										<td>
 											<div class="form-group">
 												<input type="text" class="form-control" name="blabName"
-													value="<%=request.getAttribute("blabName")%>" />
+													value="{{blabName}}" />
 											</div>
 										</td>
 									</tr>
@@ -113,7 +107,7 @@
 										<td>
 											<div class="form-group">
 												<input type="text" class="form-control" name="username"
-													value="<%=request.getAttribute("username")%>" />
+													value="{{username}}" />
 											</div>
 										</td>
 									</tr>

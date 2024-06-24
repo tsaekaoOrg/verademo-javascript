@@ -338,10 +338,10 @@ async function showProfile(req, res) {
 		let sqlMyEvents = "select event from users_history where blabber=\"" + username
 				+ "\" ORDER BY eventid DESC; ";
 		console.log(sqlMyEvents);
-		userHistoryResult = await connect.query(sqlMyEvents);
+		let userHistoryResult = await connect.query(sqlMyEvents);
 
-		userHistoryResult.forEach((event) => {
-			events.push(event[0]);
+		await userHistoryResult.forEach((event) => {
+			events.push(event['event']);
 		})
 
 		let sql = "SELECT username, real_name, blab_name FROM users WHERE username = '" + username + "'";

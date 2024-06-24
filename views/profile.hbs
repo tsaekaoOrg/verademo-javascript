@@ -185,30 +185,15 @@
 					</div>
 					<div class="actionBox">
 						<ul class="commentList">
-						<!--	<%
-								@SuppressWarnings("unchecked")
-								ArrayList<String> events = (ArrayList<String>) request.getAttribute("events");
-								
-								if (events != null && !events.isEmpty()) {
-									for (int i = 0; i < events.size(); i++) {
-							%>
+							{{#each events}}
 							<li>
-								<p class=""><%=events.get(i)%></p>
+								<p class="">{{this}}</p>
 							</li>
-							<%
-									}
-								}
-								else {
-							%>
+							{{else}}
 							<li>
 								<p class="">You haven't done anything yet!</p>
 							</li>
-							<%
-								}
-							%> -->
-							<li>
-								<p class="">You haven't done anything yet!</p>
-							</li>
+							{{/each}}
 						</ul>
 					</div>
 				</div>

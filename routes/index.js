@@ -18,18 +18,9 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage : storage });
 
-/* GET home page. */
-// router.get('/', function(req, res, next) {
-//   res.render('index', { title: 'Express' });
-// });
 router.get('/', homeController.renderGet);
 //router.get('/reset', resetController.renderGet(req,res));
-router.get('/test', userController.testFunc);
 
-// router.post('/userlogin', function(req, res, next) {
-  
-//   //test
-// } )
 router.route('/login')
   .get(userController.showLogin)
   .post(userController.processLogin)
@@ -59,6 +50,8 @@ router.route('/profile')
   .get(userController.showProfile)
   .post(upload.any(), userController.processProfile)
 
+router.get('/downloadprofileimage', userController.downloadImage);
+
 router.route('/register-finish')
   .get(userController.showRegisterFinish)
   .post(userController.processRegisterFinish)
@@ -72,8 +65,5 @@ router.route('/tools')
 router.route('/reset')
   .get(resetController.showReset)
   .post(resetController.processReset)
-
-
-
 
 module.exports = router;

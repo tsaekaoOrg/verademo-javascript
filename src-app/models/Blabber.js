@@ -1,3 +1,4 @@
+const moment = require('moment')
 
 class Blabber {
     constructor () {
@@ -9,49 +10,66 @@ class Blabber {
         this.numberListeners = null;
         this.numberListening = null;
 
-        this.date_format = "%b %d %Y";
+        this.date_format = "MMM d, YYYY";
     }
 
-    async getId() {
+    getId() {
         return this.id;
     }
-    async setID(newID) {
+
+    setID(newID) {
         this.id = newID;
     }
-    async getUsername() {
+
+    getUsername() {
         return this.username;
     }
-    async setUsername(newUsername) {
+
+    setUsername(newUsername) {
         this.username = newUsername;
     }
-    async getRealName() {
+
+    getRealName() {
         return this.realName;
     }
-    async setRealName(newRealName) {
+
+    setRealName(newRealName) {
         this.realName = newRealName;
     }
-    async getBlabName() {
+
+    getBlabName() {
         return this.BlabName;
     }
-    async setBlabName(newBlabName) {
+
+    setBlabName(newBlabName) {
         this.BlabName = newBlabName;
     }
-    async getCreatedDate() {
+
+    getCreatedDate() {
         return this.createdDate;
     }
-    async setCreatedDate(newCreatedDate) {
+
+    getCreatedDateString() {
+        return moment(this.createdDate,'YYYY/MM/DD HH:mm:ss').format(this.date_format)
+    }
+
+    setCreatedDate(newCreatedDate) {
         this.createdDate = newCreatedDate;
     }
-    async getNumberListeners() {
+
+    getNumberListeners() {
         return this.numberListeners;
     }
-    async setNumberListeners(newNumberListeners) {
+
+    setNumberListeners(newNumberListeners) {
         this.numberListeners = newNumberListeners;
     }
-    async getNumberListening() {
+
+    getNumberListening() {
         return this.numberListening;
     }
-    async setNumberListening(newNumberListening) {
+
+    setNumberListening(newNumberListening) {
         this.numberListening = newNumberListening;
     }
 }

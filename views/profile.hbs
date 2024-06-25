@@ -131,48 +131,26 @@
 					</div>
 					<div class="actionBox">
 						<ul class="commentList">
-							<!--
-							<%
-								@SuppressWarnings("unchecked")
-								List<Blabber> hecklers = (List<Blabber>) request.getAttribute("hecklers");
-								
-								@SuppressWarnings("unchecked")
-								ArrayList<String> hecklerIds = (ArrayList<String>) request.getAttribute("hecklerUsernames");
-								@SuppressWarnings("unchecked")
-								ArrayList<String> hecklerNames = (ArrayList<String>) request.getAttribute("hecklerNames");
-								@SuppressWarnings("unchecked")
-								ArrayList<String> createdTimes = (ArrayList<String>) request.getAttribute("created");
-								
-								if (hecklers != null && !hecklers.isEmpty()) {
-									for (Blabber heckler : hecklers) {
-							%>
+
+							{{#each hecklers}}
 							<li>
 								<div class="clear">
 									<div class="commenterImage">
-										<img src="resources/images/<%= heckler.getUsername() %>.png" />
+										<img src="images/{{this.getUsername}}.png" />
 									</div>
 									<div class="commentText">
-										<p><%= heckler.getBlabName() %></p>
-										<span class="date sub-text">member since <%= heckler.getCreatedDateString() %></span>
+										<p> {{this.getBlabName}} </p>
+										<span class="date sub-text">member since {{this.getCreatedDateString}} </span>
 										<br/>
 									</div>
 								</div>
 							</li>
-							<%
-									}
-								}
-								else {
-							%>
+							{{else}}
 							<li>
 								<p class="">You have no hecklers</p>
 							</li>
-							<%
-								}
-							%>
-							-->
-							<li>
-								<p class="">You have no hecklers</p>
-							</li>
+							{{/each}}
+
 						</ul>
 					</div>
 				</div>

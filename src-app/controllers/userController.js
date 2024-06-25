@@ -326,11 +326,12 @@ async function showProfile(req, res) {
 		let myHecklersResults = await myHecklers.execute([username]);
 
 		let hecklers = [];
-		myHecklersResults.forEach((heckler) => {
+		await myHecklersResults.forEach((heckler) => {
 			let blabber = new Blabber();
-			blabber.setUsername(heckler[0]);
-			blabber.setBlabName(heckler[1]);
-			blabber.setCreatedDate(heckler[2]);
+			blabber.setUsername(heckler['username']);
+			blabber.setBlabName(heckler['blab_name']);
+			blabber.setCreatedDate(heckler['created_at']);
+			blabber.getCreatedDateString();
 			hecklers.push(blabber);
 		})
 		

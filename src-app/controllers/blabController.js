@@ -13,18 +13,15 @@ const ListenCommand = require('../commands/ListenCommand');
 //require('../models/Blab.js')
 
 
-const sqlBlabsByMe = "SELECT blabs.content, blabs.timestamp, COUNT(comments.blabber), blabs.blabid "
+const sqlBlabsByMe = "SELECT blabs.content, blabs.timestamp, COUNT(comments.blabber) AS count, blabs.blabid "
         + "FROM blabs LEFT JOIN comments ON blabs.blabid = comments.blabid "
         + "WHERE blabs.blabber = ? GROUP BY blabs.blabid ORDER BY blabs.timestamp DESC;";
 
-const sqlBlabsForMe = "SELECT users.username, users.blab_name, blabs.content, blabs.timestamp, COUNT(comments.blabber), blabs.blabid "
+const sqlBlabsForMe = "SELECT users.username, users.blab_name, blabs.content, blabs.timestamp, COUNT(comments.blabber) AS count, blabs.blabid "
         + "FROM blabs INNER JOIN users ON blabs.blabber = users.username INNER JOIN listeners ON blabs.blabber = listeners.blabber "
         + "LEFT JOIN comments ON blabs.blabid = comments.blabid WHERE listeners.listener = ? "
         + "GROUP BY blabs.blabid ORDER BY blabs.timestamp DESC LIMIT {} OFFSET {};";
 
-/*
-*   TODO: Fix setCommentCount() to contain comment count. Currently does not work.
-*/
 async function showFeed(req, res){
     
     console.log("Entering showFeed");
@@ -62,7 +59,7 @@ async function showFeed(req, res){
             post.setId(item['blabid']);
             post.setContent(item['content']);
             post.setPostDate(item['timestamp']);
-            post.setCommentCount(item['COUNT']);
+            post.setCommentCount(item['count']);
             post.setAuthor(author);
 
             feedBlabs.push(post);
@@ -82,7 +79,7 @@ async function showFeed(req, res){
             post.setId(item['blabid']);
             post.setContent(item['content']);
             post.setPostDate(item['timestamp']);
-            post.setCommentCount(item['COUNT']);
+            post.setCommentCount(item['count']);
 
             myBlabs.push(post);
         }
@@ -101,16 +98,10 @@ async function showFeed(req, res){
 async function getMoreFeed(req,res){
     const count = req.query.count;
     const length = req.query.len;
-    // const template = "<li><div>" + "\t<div class=\"commenterImage\">" + "\t\t<img src=\"/images/{username}.png\">"
-	// 			+ "\t</div>" + "\t<div class=\"commentText\">" + "\t\t<p>{content}</p>"
-	// 			+ "\t\t<span class=\"date sub-text\">by {blab_name} on {timestamp}</span><br>"
-	// 			+ "\t\t<span class=\"date sub-text\"><a href=\"blab?blabid={blabid}\">{count} Comments</a></span>" + "\t</div>"
-	// 			+ "</div></li>";
-
     const template = "<li><div>" + "\t<div class=\"commenterImage\">" + "\t\t<img src=\"/images/{username}.png\">"
-				+ "\t</div>" + "\t<div class=\"commentText\">" + "\t\t<p>THE PROBLEM IS HERE</p>"
+				+ "\t</div>" + "\t<div class=\"commentText\">" + "\t\t<p>{content}</p>"
 				+ "\t\t<span class=\"date sub-text\">by {blab_name} on {timestamp}</span><br>"
-				+ "\t\t<span class=\"date sub-text\"><a href=\"#\">{count} Comments</a></span>" + "\t</div>"
+				+ "\t\t<span class=\"date sub-text\"><a href=\"blab?blabid={blabid}\">{count} Comments</a></span>" + "\t</div>"
 				+ "</div></li>";
 
     let cnt = null;
@@ -144,10 +135,10 @@ async function getMoreFeed(req,res){
             formatter = {
                 username: item['username'],
                 blab_name: item['blab_name'],
-                //content: item['content'],
-                timestamp: blab['timestamp'],
+                content: item['content'],
+                timestamp: blab.getPostDateString(),
                 blabid: item['blabid'],
-                count: item['commentCount']
+                count: item['count']
             }
             ret += pyformat(template,[],formatter)
         }        

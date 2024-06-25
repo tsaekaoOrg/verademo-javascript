@@ -1,18 +1,6 @@
 const fs = require('fs');
-const axios = require('axios');
+const User = require('../utils/User.js');
 const mariadb = require('mariadb');
-
-
-function create(username, password, realName) {
-    return {
-        username: username,
-        password:  password,
-        realName: realName,
-        dateCreated: new Date(),
-        lastLogin: new Date(),
-        blabName: username
-    }
-}
 
 const users = [
     create("admin", "admin", "Mr. Administrator"),

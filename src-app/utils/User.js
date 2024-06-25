@@ -1,23 +1,23 @@
+const crypto = require('crypto');
+const moment = require('moment');
+
 class User {
     constructor(username, password, dateCreated, lastLogin, blabName,realName) {
         this.username = username;
-        this.password = password;
+        this.password = crypto.createHash('md5').update(password).digest("hex");
         this.dateCreated = dateCreated;
         this.lastLogin = lastLogin;
         this.blabName = blabName;
         this.realName = realName;
     }
+
+    create(userName, blabName, realName) {
+        let password = userName;
+        let dateCreated = moment().format("YYYY-MM-DD HH:mm:ss");
+        let lastLogin = null;
+
+        return new User(userName, password, dateCreated, lastLogin, blabName, realName)
+    }
 }
 
-function create(username, blabName,realName)
-{
-    password = username
-    dateCreated = null //moment.now().format("YYYY-MM-DD hh:mm:ss")
-    lastLogin = null;
-    return new User(username, password/*hashlib.md5(password.encode('utf-8')).hexdigest()*/, username, dateCreated, lastLogin, blabName, realName);
-}
-
-module.exports = {
-    create,
-    User,
-}
+module.exports = User

@@ -63,6 +63,8 @@ router.route('/register-finish')
   .get(userController.showRegisterFinish)
   .post(userController.processRegisterFinish)
 
+router.get('/password-hint', userController.showPasswordHint);
+
 router.route('/tools')
   .get(toolsController.showTools)
   .post(toolsController.processTools)

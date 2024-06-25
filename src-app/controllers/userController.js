@@ -6,7 +6,9 @@ const Blabber = require('../models/Blabber.js');
 const fs = require('fs');
 const path = require('path');
 const image_dir = path.join(__dirname, '../../resources/images/');
-const User = require('../utils/User.js')
+const User = require('../utils/User.js');
+const util = require('util');
+const { resourceLimits } = require('worker_threads');
 
 
 async function showLogin(req, res) {
@@ -164,7 +166,7 @@ async function processLogin(req, res) {
 
 		// Redirect to the appropriate place based on login actions above
 		console.log("Redirecting to view: " + nextView);
-		return eval(nextView);
+		return eval(nextView);``
     }
     catch (err) {
         console.error(err.message);
@@ -172,14 +174,34 @@ async function processLogin(req, res) {
     }
 }
 
+
 async function showPasswordHint(req, res) {
-	console.log("Entering password-hitn wtih username: " + username);
-	
+	const username = req.query.username
+	console.log("Entering password-hint with username: " + username);
+
 	if (!username) {
 		return "No username provided, please type in your username first";
 	}
 
-	// TODO: Continue
+	try {
+		let connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+		let sql = "SELECT password_hint FROM users WHERE username = '" + username + "'";
+		console.log(sql);
+
+		let result = await connect.query(sql);
+		if (result.length > 0) {
+			let password = result[0]['password_hint'];
+			let formatString = "Username '" + username + "' has password: %s%s";
+			console.log(formatString);
+			return res.json(util.format(formatString, password.slice(0, 2), '*'.repeat(password.length - 2)));
+		} else {
+			return res.json("No password found for " + username);
+		}
+	} catch (err) {
+		console.error(err);
+	}
+
+	return res.json("ERROR!");
 }
 
 async function processLogout(req, res) {
@@ -654,5 +676,6 @@ module.exports = {
 	processRegisterFinish,
 	showProfile,
 	processProfile,
+	showPasswordHint,
 };
 

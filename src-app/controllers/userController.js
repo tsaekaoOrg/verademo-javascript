@@ -4,6 +4,7 @@ const dbconnector = require('../utils/dbconnector.js');
 const moment = require('moment')
 const Blabber = require('../models/Blabber.js');
 const fs = require('fs');
+var nodemailer = require('nodemailer');
 const path = require('path');
 const image_dir = path.join(__dirname, '../../resources/images/');
 const User = require('../utils/User.js')
@@ -273,7 +274,7 @@ async function processRegisterFinish(req, res) {
 		
 		// /* END EXAMPLE VULNERABILITY */
 
-		// emailUser(username);
+		emailUser(username);
 	} catch (err) {
 		console.error(err);
 	} finally {
@@ -297,7 +298,28 @@ async function processRegisterFinish(req, res) {
 }
 
 function emailUser(username) {
+	var transporter = nodemailer.createTransport({
+		service: 'veracode',
+		auth: {
+			user:'verademo@veracode.com',
+			pass: 'password'
+		}
+	});
 
+	var message = {
+		from: 'verademo@veracode.com',
+		to: 'admin@example.com',
+		subject: 'Account Registration',
+		text: `A new VeraDemo user registered: ${username}`
+	}
+	console.log("Sending email to admin");
+	transporter.sendMail(message, function(error, info){
+		if (error) {
+		  console.log(error);
+		} else {
+		  console.log('Email sent: ' + info.response);
+		}
+	  });
 }
 
 async function showProfile(req, res) {

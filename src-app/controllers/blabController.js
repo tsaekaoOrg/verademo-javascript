@@ -6,6 +6,7 @@ var Blab = require('../models/Blab');
 var Blabber = require('../models/Blabber');
 var Comment = require('../models/Comment');
 const { nextDay } = require('date-fns');
+const moment = require('moment')
 const IgnoreCommand = require('../commands/IgnoreCommand');
 const ListenCommand = require('../commands/ListenCommand');
 
@@ -33,7 +34,7 @@ async function showFeed(req, res){
     if (!username) 
     {
         console.log("User is not Logged In - redirecting...");
-        return res.redirect("login?target=profile");
+        return res.redirect("login?target=feed");
     }
 
     console.log("User is Logged In - continuing... UA=", req.headers['user-agent'], " U=", username);
@@ -165,7 +166,7 @@ async function processFeed(req, res){
     // Ensure user is logged in
     if (username == null) {
         console.log("User is not Logged In - redirecting...");
-        return res.redirect("login?target=profile");
+        return res.redirect("login?target=feed");
     }
     console.log("User is Logged In - continuing... UA=" + req.headers["User-Agent"] + " U=" + username);
 
@@ -224,7 +225,7 @@ async function showBlab(req,res)
     // Ensure user is logged in
     if (username == null) {
         console.log("User is not Logged In - redirecting...");
-        return res.redirect("login?target=profile");
+        return res.redirect("login?target=feed");
     }
 
     console.log("User is Logged In - continuing... UA=" + req.headers["User-Agent"] + " U=" + username);
@@ -327,13 +328,14 @@ async function processBlab(req,res)
         connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 
         const now = new Date();
+
         //
         console.log("Preparing the addComment Prepared Statement");
         addComment = await connect.prepare(addCommentSql);
-        //addComment.setTimestamp(4, new Timestamp(now.getTime()));
+        const timestamp = moment().format('YYYY-MM-DD HH:mm:ss')
 
         console.log("Executing the addComment Prepared Statement");
-        let addCommentResult = await addComment.execute([blabid,username,comment,null]); //Change null to datetime
+        let addCommentResult = await addComment.execute([blabid,username,comment,timestamp]); //Change null to datetime
 
         // If there is a record...
         if (addCommentResult) {
@@ -341,7 +343,7 @@ async function processBlab(req,res)
             res.locals["error"] = "Failed to add comment";
         }
 
-        nextView = 'res.redirect("blab?blabid="' + blabid+');';
+        nextView = 'res.redirect("blab?blabid=' + blabid + '");';
     } catch (ex) {
         console.error(ex);
     } finally {

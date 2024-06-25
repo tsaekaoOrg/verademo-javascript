@@ -78,7 +78,7 @@
 									<div class="commentText">
 										<p class="">{{this.content}}</p>
 										<span class="date sub-text">
-											by {{ this.author.BlabName }} on {{this.postDate}} <!-- This should be post.getPostDateString() -->
+											by {{ this.author.BlabName }} on {{this.getPostDateString}}
 										</span>
 										<br/>
 										<span class="date sub-text">
@@ -116,7 +116,7 @@
 							<li>
 								<div class="commentText">
 									<p class="">{{this.content}}</p>
-									<span class="date sub-text">by you on {{this.postDate}}</span><br/> <!-- This should be post.getPostDateString() -->
+									<span class="date sub-text">by you on {{this.getPostDateString}}</span><br/>
 									<span class="date sub-text">
 										<a href="blab?blabid={{this.id}}">{{this.commentCount}} Comments</a> <!-- commentCount currently returns null-->
 									</span>

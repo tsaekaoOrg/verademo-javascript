@@ -1,4 +1,4 @@
-var express = require('express');
+const moment = require('moment')
 
 class Comment  {
     constructor() {
@@ -8,37 +8,50 @@ class Comment  {
         this.content = null;
         this.timestamp = null;
 
-        this.date_format = "%b %d %Y";
+        this.date_format = "MMM D, YYYY";
     }
 
-    async getCommentID() {
+    getCommentID() {
         return this.commentID;
     }
-    async setCommentID(newCommentID) {
+    
+    setCommentID(newCommentID) {
         this.commentID = newCommentID;
     }
-    async getBlabID() {
+
+    getBlabID() {
         return this.blabID;
     }
-    async setBlabID(newBlabID) {
+
+    setBlabID(newBlabID) {
         this.blabID = newBlabID;
     }
-    async getAuthor() {
+
+    getAuthor() {
         return this.blabber;
     }
-    async setAuthor(newBlabber) {
+
+    setAuthor(newBlabber) {
         this.blabber = newBlabber;
     }
-    async getContent() {
+
+    getContent() {
         return this.content;
     }
-    async setContent(newContent) {
+
+    setContent(newContent) {
         this.content = newContent;
     }
-    async getTimestamp() {
+
+    getTimestamp() {
         return this.timestamp;
     }
-    async setTimestamp(newTimestamp) {
+
+    getTimestampString() {
+        return moment(this.timestamp,'YYYY/MM/DD HH:mm:ss').format(this.date_format)
+    }
+
+    setTimestamp(newTimestamp) {
         this.timestamp = newTimestamp;
     }
 }

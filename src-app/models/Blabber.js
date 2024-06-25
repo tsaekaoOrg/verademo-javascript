@@ -10,7 +10,7 @@ class Blabber {
         this.numberListeners = null;
         this.numberListening = null;
 
-        this.date_format = "MMM d, YYYY";
+        this.date_format = "MMM D, YYYY";
     }
 
     getId() {

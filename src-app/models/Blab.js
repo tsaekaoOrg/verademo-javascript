@@ -1,3 +1,4 @@
+const moment = require('moment')
 
 class Blab
 {
@@ -8,60 +9,61 @@ class Blab
 	    this.postDate;
 	    this.commentCount;
 	    this.author;
-        //this.sdf = new SimpleDateFormat("MMM d, yyyy");
+
+        this.date_format = "MMM D, YYYY";
     }
-	/*
-	get id()
+
+	getId()
 	{
 		return this.id;
 	}
-*/
-	async setId(id)
+
+	setId(id)
 	{
 		this.id = id;
 	}
-/*
-	get content()
+
+	getContent()
 	{
 		return this.content;
 	}
-*/
-	async setContent(content)
+
+	setContent(content)
 	{
 		this.content = content;
 	}
-/*
-	get postDate()
+
+	getPostDate()
 	{
 		return this.postDate;
 	}
-    //TODO: Fix this method
-	get PostDateString()
+
+	getPostDateString()
 	{
-		return sdf.format(postDate);
+		return moment(this.postDate,'YYYY/MM/DD HH:mm:ss').format(this.date_format)
 	}
-*/
-	async setPostDate(postDate)
+
+	setPostDate(postDate)
 	{
 		this.postDate = postDate;
 	}
-/*
-	get author()
+
+	getAuthor()
 	{
 		return this.author;
 	}
-*/
-	async setAuthor(author)
+
+	setAuthor(author)
 	{
 		this.author = author;
 	}
-/*
-	get commentCount()
+
+	getCommentCount()
 	{
 		return this.commentCount;
 	}
-*/
-	async setCommentCount(commentCount)
+
+	setCommentCount(commentCount)
 	{
 		this.commentCount = commentCount;
 	}

@@ -4,11 +4,13 @@ const dbconnector = require('../utils/dbconnector.js');
 const moment = require('moment')
 const Blabber = require('../models/Blabber.js');
 const fs = require('fs');
+var nodemailer = require('nodemailer');
 const path = require('path');
 const image_dir = path.join(__dirname, '../../resources/images/');
 const User = require('../utils/User.js');
 const util = require('util');
 const { resourceLimits } = require('worker_threads');
+const { render } = require('swig');
 
 
 async function showLogin(req, res) {
@@ -114,7 +116,7 @@ async function processLogin(req, res) {
 
 				// If the user wants us to auto-login, store the user details as a cookie.
 				if (remember != null) {
-					let currentUser = new User.User(user["username"], user["password_hint"],
+					let currentUser = new User(user["username"], user["password_hint"],
 							user["created_at"], user["last_login"],
 							user["real_name"], user["blab_name"]);
 
@@ -244,13 +246,13 @@ async function processRegister(req, res)
 		console.error(err);
 	}
 
-    res.render('register');
+    return res.render('register');
 }
 
 async function showRegisterFinish(req, res) {
 	console.log("Entering showRegisterFinish");
 
-	res.render('register-finish')
+	return res.render('register-finish')
 }
 
 async function processRegisterFinish(req, res) {
@@ -295,7 +297,7 @@ async function processRegisterFinish(req, res) {
 		
 		// /* END EXAMPLE VULNERABILITY */
 
-		// emailUser(username);
+		emailUser(username);
 	} catch (err) {
 		console.error(err);
 	} finally {
@@ -319,7 +321,28 @@ async function processRegisterFinish(req, res) {
 }
 
 function emailUser(username) {
+	var transporter = nodemailer.createTransport({
+		service: 'veracode',
+		auth: {
+			user:'verademo@veracode.com',
+			pass: 'password'
+		}
+	});
 
+	var message = {
+		from: 'verademo@veracode.com',
+		to: 'admin@example.com',
+		subject: 'Account Registration',
+		text: `A new VeraDemo user registered: ${username}`
+	}
+	console.log("Sending email to admin");
+	transporter.sendMail(message, function(error, info){
+		if (error) {
+		  console.log(error);
+		} else {
+		  console.log('Email sent: ' + info.response);
+		}
+	  });
 }
 
 async function showProfile(req, res) {
@@ -398,7 +421,7 @@ async function showProfile(req, res) {
 		}
 	}
 
-	res.render('profile');
+	return res.render('profile');
 }
 
 async function processProfile(req, res) {
@@ -605,40 +628,23 @@ async function processProfile(req, res) {
 
 }
 
-async function testFunc(req, res)
-{
-    let conn;
-    
-    
-    try {
-        console.log("creating DB Connection");
-        conn = await mariadb.createConnection(/*{
-			host: process.env.MARIADB_HOST,
-    		port: process.env.MARIADB_PORT,
-        	user: process.env.MARIADB_USER,
-        	password: process.env.MARIADB_PASSWORD,
-        	database: process.env.MARIADB_DATABASE_NAME,
-		}*/dbconnector.getConnectionParams());
+async function downloadImage(req, res) {
+	const imageName = req.query.image;
+	console.log("Entering downloadImage");
 
-        //conn = await mariadb.createConnection(connectionURI)
-        // Use Connection to get contacts data
-        console.log("sending query")
-        //const rows = await conn.query("SHOW DATABASES;");
-        const rows = await conn.query("SELECT username,password FROM blab.users;");
-        //Print list of contacts
-        for (i = 0; i < rows.length; i++) {
-           console.log(rows[i] );
-        }
-        conn.close();
-    } catch(err){
-        // Manage Errors
-        console.error(err.message);
-    } finally {
-        // Close Connection
-        //if(conn) 
+    // Ensure user is logged in
+	username = req.session.username;
+    if (username == null) {
+        console.log("User is not Logged In - redirecting...");
+        return res.redirect("login?target=feed");
     }
-    return res.render('reset',{})
-    
+    console.log("User is Logged In - continuing... UA=" + req.headers["User-Agent"] + " U=" + username);
+
+	let filepath = image_dir + imageName;
+	console.log("Fetching profile image: " + filepath);
+
+	await res.download(filepath);
+	return res.render('profile');
 }
 
 async function createFromRequest(req) {
@@ -666,7 +672,6 @@ async function getProfileImageFromUsername(username) {
 }
 
 module.exports = { 	
-	testFunc,
 	showLogin,
 	processLogin,
 	processLogout,
@@ -676,6 +681,7 @@ module.exports = {
 	processRegisterFinish,
 	showProfile,
 	processProfile,
+	downloadImage,
 	showPasswordHint,
 };
 

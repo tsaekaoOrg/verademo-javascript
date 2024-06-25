@@ -1,14 +1,21 @@
 const fs = require('fs');
+<<<<<<< HEAD
 const axios = require('axios');
 const crypto = require('crypto');
+=======
+const User = require('../utils/User.js');
+>>>>>>> e0e0f71996a51bc4d5a32ef21d7d726f7a23d045
 const mariadb = require('mariadb');
 const dbconnector = require('../utils/dbconnector.js');
 const User = require('../utils/User.js');
 
 const usersStatementSQL = 'INSERT INTO users (username, password, real_name) values (?, ?, ?)'
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> e0e0f71996a51bc4d5a32ef21d7d726f7a23d045
 const users = [
         User.create("admin", "admin", "Mr. Administrator"),
 		User.create("john", "John", "John Smith"),

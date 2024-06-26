@@ -1,36 +1,23 @@
-const { spawn } = require('child_process');
-const e = require('express');
-const express = require('express');
-const { loggers } = require('winston');
-// const tools = require('tools.js');
-
-// View engine
-// app.set('view engine', 'hbs');
-// app.set('views', path.join(__dirname, 'views'));
-
+const process = require('child_process');
+const { TIMEOUT } = require('dns');
 
 // Loads tools page
 function showTools(req, res) {
-    req.host = "";
     res.render('tools.hbs', {});
 }
 // Performs actions on tools page
 async function processTools(req, res) {
-    try {
-        const host = req.body.host;
-        const fortunefile = req.body.fortunefile;
-        console.log(host);
-        const fortunes = fortunefile ? await fortune(fortunefile) : "";
-        // req.host = host;
-        const pingResult = host ? await ping(host) : "";
-
-        return res.render('tools', {host, fortunes, ping : pingResult}); 
-
+    let host = req.body.host;
+    let fortuneFile = req.body.fortunefile;
+    console.log(fortuneFile);
+    if (fortuneFile) {
+        fortuneFile = "startrek";
     }
-    catch (err) {
-        console.log(err);
-        return res.status(500).json(err);
-    }
+
+    console.log(host);
+    res.locals['fortunes'] = await fortune(fortuneFile);
+    res.locals['ping'] = await ((host != null) ? ping(host) : "");
+    return res.render('tools', {host});
 }
 // Pings selected host based on user input, then outputs the results
 async function ping(host) {
@@ -44,7 +31,7 @@ async function ping(host) {
             reject(output);
         }, 5000);
         try {
-            let pingProcess = spawn('ping', ['-c', '1', host]);
+            let pingProcess = process.spawn('ping', ['-c', '1', host]);
             pingProcess.stdout.on('data', (data) => {
                 output = data.toString();
                 console.log(output);
@@ -69,16 +56,20 @@ async function ping(host) {
 }
 
 // Produces a fortune based on selection
-function fortune(file, callback) {
+async function fortune(fortuneFile) {
+    
     return new Promise((resolve, reject) => {
-        output = "";
-        const cmd = '/usr/bin/fortune ${file}';
-        console.log("Fortune file: " + file);
-        console.log("Command: " + cmd);
+        let cmd = "fortune " + fortuneFile;
+        let output = "";
+
+        const timer = setTimeout(() => {
+            console.log("Ping timed out");
+            output = "ping: unknown host " + host;
+            reject(output);
+        }, 5000);
         try {
-            console.log("After Try " + file);
-            console.log("After Try " + output);
-            let fortuneProcess = spawn(cmd, [file]);
+            /* START EXAMPLE VULNERABILITY */
+            let fortuneProcess = process.exec(cmd,timeout=5000);
             fortuneProcess.stdout.on('data', (data) => {
                 output = data.toString();
                 console.log(output);
@@ -86,30 +77,24 @@ function fortune(file, callback) {
                 resolve(output);
             });
             fortuneProcess.stderr.on('data', (data) => {
-                output = data.toString();
-                console.log(output);
-                console.log("Exit code: " + fortuneProcess.exitCode);
+                console.log("Error: " + data.toString());
                 reject(data.toString());
             });
             fortuneProcess.on('close', (code) => {
-                if (code === 0) {
-                    console.log("Exit code: " + code);
-                    callback(output);
-                    resolve(output);
-                } else {
-                    console.log("Exit code: " + code);
-                    callback(output);
-                    reject(output);
-                }
+                console.log("Exit code: " + code);
+                clearTimeout(timer);
+                resolve(output);
             });
-        } catch (err) {
-            console.log("Error occured during fortune: ", err);
-            callback(err);
-            reject(err);
+            /* END EXAMPLE VULNERABILITY */
         }
-    });
+        catch (err){
+            console.error(err);
+        }
+    
+    
+})
 }
 
-module.exports = {showTools, processTools, ping, fortune}
+module.exports = {showTools, processTools,}
 
 

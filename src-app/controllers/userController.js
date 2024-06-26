@@ -96,15 +96,12 @@ async function processLogin(req, res) {
 			console.log("Execute the Statement");
 			const result = await connect.query(sqlQuery);
 			/* END BAD CODE */
-			/* START GOOD CODE TODO
-			String sqlQuery = "select * from users where username=? and password=?;";
-			console.log("Preparing the PreparedStatement");
-			sqlStatement = connect.prepareStatement(sqlQuery);
-			console.log("Setting parameters for the PreparedStatement");
-			sqlStatement.setString(1, username);
-			sqlStatement.setString(2, password);
-			console.log("Executing the PreparedStatement");
-			ResultSet result = sqlStatement.executeQuery();
+			/* START GOOD CODE */
+			// const sqlQuery = "select * from users where username=? and password=?;";
+			// console.log("Preparing the PreparedStatement");
+			// sqlStatement = await connect.prepare(sqlQuery);
+			// console.log("Executing the PreparedStatement");
+			// const result = await sqlStatement.execute([username, password]);
 			/* END GOOD CODE */
 
 			// Did we find exactly 1 user that matched?
@@ -135,16 +132,11 @@ async function processLogin(req, res) {
 				res.locals.target = target;
 				nextView = "res.render('login')";
 			}
-		// } catch (SQLException exceptSql) {
-		// 	console.error(exceptSql);
-		// 	model.addAttribute("error", exceptSql.getMessage() + "<br/>" + displayErrorForWeb(exceptSql));
-		// 	model.addAttribute("target", target);
-		// 	nextView = "login";
 		} catch (err) {
-			console.error(err.message);
-			res.locals.error = err.message;
+			console.error(err);
+			res.locals.error = err;
 			res.locals.target = target;
-
+			nextView = "res.render('login')";
 		} finally {
 			try {
 				if (sqlStatement) {
@@ -301,13 +293,6 @@ async function processRegisterFinish(req, res) {
 	} catch (err) {
 		console.error(err);
 	} finally {
-		// try {
-		// 	if (sqlStatement != null) {
-		// 		sqlStatement.close();
-		// 	}
-		// } catch (SQLException exceptSql) {
-		// 	console.error(exceptSql);
-		// }
 		try {
 			if (connect) {
 				connect.close();

@@ -74,12 +74,6 @@ function showReset(req,res)
 }
 
 async function recreateDatabaseSchema() {
-    /*console.log("Reading database schema from file");
-    let schemaSQL = fs.readFileSync("blab_schema.sql", "utf8");
-
-   
-    connect = await mariadb.createConnection(dbconnector.getConnectionParams()); */
-
     // let filepath = path.join(__dirname, '../../blab_schema.sql');
     let filepath = 'blab_schema.sql';
     // let filepath = path.join(__dirname, '../../blab_schema.sql');
@@ -180,12 +174,15 @@ async function processReset(req,res) {
                 console.log("Preparing the Statement for adding listeners");
 
                 let listenersStatement = await connect.prepare("INSERT INTO listeners (blabber, listener, status) values (?, ?, 'Active');");
+                let randomUser;
+                let listener;
+                let blabber;
                 for (let i = 1; i < users.length; i++) {
                     for (let j = 1; j < users.length; j++) {
-                        let randomUser = users[Math.floor(Math.random() * (users.length - 1)) + 1];
+                        randomUser = users[Math.floor(Math.random() * (users.length - 1)) + 1];
                         if (Math.random() < 0.5 && randomUser !== users[i]) {
-                            let blabber = users[i].getUserName();
-                            let listener = randomUser.getUserName();
+                            blabber = users[i].getUserName();
+                            listener = randomUser.getUserName();
                             console.log("Adding " + listener + " as a listener of " + blabber);
                             await listenersStatement.execute([blabber, listener]);
                         }
@@ -196,9 +193,65 @@ async function processReset(req,res) {
                 console.error("Error loading data, reverting changes: ", err);
                 await connect.rollback();
             }
+            // Fetching blabs
+            console.log("Reading blabs from file");
+            let blabsContent = fs.readFileSync("resources/files/blabs.txt", 'utf8').split('\n');
+                
+            console.log(blabsContent)
+
             // Adding blabs
+            try {
+                console.log("Preparing the Statement for adding blabs")
+                let blabsStatement = await connect.prepare("INSERT INTO blabs (blabber, content, timestamp) values (?,?,?);");
+                let randomUser;
+                let username;
+                let timestamp;
+                let vary;
+                for (blab of blabsContent) {
+                    randomUser = users[Math.floor(Math.random() * (users.length - 1)) + 1];
+                    username = randomUser.getUserName();
+                    vary = Math.floor(Math.random()* 30 * 24 * 3600);
+                    timestamp = moment().subtract(vary, "seconds").format("YYYY-MM-DD HH:mm:ss");
+                    console.log("Adding a blab for " + username);
+                    await blabsStatement.execute([username, blab, timestamp]);
+                }
+            await connect.commit();  
+            } catch (err) {
+                console.error("Error loading data, reverting changes: ", err);
+                await connect.rollback();
+            } 
+        // Comments
+        try {
+            // Fetching comments
+            console.log("Reading comments from file");
+            let commentsContent = fs.readFileSync("resources/files/comments.txt", 'utf8').split('\n');
+            // Adding comments
+            console.log("Preparing the statement for adding comments");
+            let commentsStatement = await connect.prepare("INSERT INTO comments (blabid, blabber, content, timestamp) values (?, ?, ?, ?);");
+            let count, randomUser, username, commentNum, comment, vary;
+            for (let i = 1; i <= blabsContent.length; i++) {
+                count = Math.floor(Math.random() * 6);
+
+                for (let j = 0; j < count; j++) {
+                    console.log("Adding a comment for " + username + " on blab ID " + i.toString());
+                    randomUser = users[Math.floor(Math.random() * (users.length - 1)) + 1];
+                    username = randomUser.getUserName();
+                    vary = Math.floor(Math.random()* 30 * 24 * 3600);
+                    timestamp = moment().subtract(vary, "seconds").format("YYYY-MM-DD HH:mm:ss");
+                    commentNum = Math.floor(Math.random() * commentsContent.length);
+                    comment = commentsContent[commentNum];
+            
+                    await commentsStatement.execute([i, username, comment, timestamp]);
+                }
+            }
+            await connect.commit();
         } catch (err) {
-            console.error(err);
+            console.error("Error loading data, reverting changes: ", err);
+            await connect.rollback();
+        }
+        } catch (err) {
+            console.error("Error loading data, reverting changes: ", err);
+            await connect.rollback();
         }
     } catch (err) {
         console.error(err);
@@ -207,92 +260,9 @@ async function processReset(req,res) {
         
     res.redirect('/reset');
 }
-/*
-    const confirm = req.body.confirm;
 
-    if (confirm == null)
-    {
-        res.locals.error = "Make sure to press confirm";
-        return res.render(request, 'app/reset.html');
-    }
-    console.log("Entering processReset");
 
-    // Drop existing tables and reUser.create from schema file
-    // TODO: Implement Vulnerability (Shell Injection)
-    // https://docs.python.org/2/library/subprocess.html#frequently-used-arguments
-    
-    try {
-        console.log("Getting Database connection...");
-        let connection = await mariadb.User.createConnection(dbconnector.getConnectionParams());
-        // Adding the listeners
-        console.log("Preparing the statement for adding users");
-        const userDetails = User.create();
-        const { username, password, password_hint, User.created_at, last_login, real_name, blab_name } = userDetails;
 
-        const usersStatement = `INSERT INTO users (username, password, password_hint, User.created_at, last_login, real_name, blab_name) 
-        VALUES ('${username}', '${password}', '${password_hint}', '${User.created_at}', '${last_login}', '${real_name}', '${blab_name}');`;
-
-        if (users[0].password == "21232f297a57a5a743894a0e4a801fc3") {
-            console.log("Encryption successful!");
-        }
-        
-        console.log("Adding user " + users.username);
-        await connection.query(usersStatement);
-        
-        console.log("Preparing the statement for adding listeners");
-        const listenersStatement = `INSERT INTO listeners (blabber, listener)
-        VALUES ($1,$2, 'Active')`;
-
-        for (let blabber of users.slice(1)) {
-            for (let listener of users.slice(1)) {
-                if (random.boolean() && (blabber.username !== listener.username)) {
-                    console.log("Adding listener " + blabber.username + " to " + listener.username);
-                    await connection.query(listenersStatement, [
-                        blabber.username, listener.username
-                    ]);
-                }
-            }
-        }
-        // Fetching blabs that are pre-loaded
-        console.log("Reading blabs from file");
-        const blabsContent = fs.readFile("blabs.txt");
-        // Adding blabs
-        console.log("Preparing the statement for adding blabs");
-        const blabsStatement = `INSERT INTO blabs (blabber, content, timestamp)
-        VALUES (?,?, datetime('now'))`;
-
-        for (let blabContent of blabsContent) {
-            const randomUserOffset = Math.floor(Math.random() * (users.length -1)) + 1;
-            const username = users[randomUserOffset].username;
-            console.log("Adding blab for " + username);
-            await connection.query(blabsStatement, [username, blabContent]);
-        }
-
-        // Fetch comments
-        console.log("Reading comments from file");
-        const commentsContent = fs.readFile("comments.txt");
-        // Adding comments
-        console.log("Preparing the statement for adding commqents");
-        const commentsStatement = `INSERT INTO comments (blabber, content, timestamp)
-        VALUES (?,?, datetime('now'))`;
-
-        for (let i = 0; i < blabsContent.length; i++) {
-            const count = Math.floor(Math.random() * 6);
-            for (let j = 0; j < count; j++) {
-                const randomUserOffset = Math.floor(Math.random() * (users.length -1)) + 1;
-                const username = users[randomUserOffset].username;
-                const commentNum = Math.floor(Math.random() * commentsContent.length);
-                const comment = commentsContent[commentNum];
-                console.log("Adding a comment from " + username + " on blab ID " + i);
-                await connection.query(commentsStatement, [username, comment]);
-            }
-        }
-        console.log("Database Reset... Great Success!");
-    } catch (e) {
-        console.error("Unexpected Error:", e);
-    }
-
-    res.redirect('/reset');*/
 
 
 module.exports = { showReset, processReset };

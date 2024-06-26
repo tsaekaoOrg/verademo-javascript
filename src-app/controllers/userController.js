@@ -174,7 +174,7 @@ async function showPasswordHint(req, res) {
 	console.log("Entering password-hint with username: " + username);
 
 	if (!username) {
-		return "No username provided, please type in your username first";
+		return res.json("No username provided, please type in your username first");
 	}
 
 	try {
@@ -221,6 +221,11 @@ async function processRegister(req, res)
 {
 	const username = req.body.user;
 	res.locals.username = username;
+
+	if (!username) {
+		res.locals.error = "No username provided, please type in your username first"
+        return res.render('register');
+	}
 
 	console.log("Creating the Database connection");
 	try {

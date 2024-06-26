@@ -11,13 +11,43 @@ class User {
         this.realName = realName;
     }
 
-    create(userName, blabName, realName) {
-        let password = userName;
-        let dateCreated = moment().format("YYYY-MM-DD HH:mm:ss");
-        let lastLogin = null;
+    getUserName() { return this.username; }
 
-        return new User(userName, password, dateCreated, lastLogin, blabName, realName)
+    getPassword() { return this.password; }
+
+    getPasswordHint() { return this.password_hint; }
+
+    getLastLogin() { return this.lastLogin; }
+
+    getDateCreated() { return this.dateCreated; }
+
+    getRealName() { return this.realName; }
+
+    getBlabName() { return this.blabName; }
+
+
+
+
+    setTimestamp(index, date) {
+        if (!(date instanceof Date)) {
+            throw new Error('Invalid date object');
+        }
+        this.params[index - 1] = date.toISOString();
     }
+
+    
+
 }
 
-module.exports = User
+function create(username, blabName,realName)
+    {
+        let password = username;
+        let dateCreated = new Date()
+        let lastLogin = null;
+
+        return new User(username, password, dateCreated, lastLogin, blabName,realName);
+    }
+
+
+
+module.exports = {User, create}

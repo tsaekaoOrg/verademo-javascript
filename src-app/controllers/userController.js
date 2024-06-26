@@ -113,7 +113,7 @@ async function processLogin(req, res) {
 
 				// If the user wants us to auto-login, store the user details as a cookie.
 				if (remember != null) {
-					let currentUser = new User(user["username"], user["password_hint"],
+					let currentUser = new User.User(user["username"], user["password_hint"],
 							user["created_at"], user["last_login"],
 							user["real_name"], user["blab_name"]);
 

@@ -9,14 +9,14 @@ function showTools(req, res) {
 async function processTools(req, res) {
     let host = req.body.host;
     let fortuneFile = req.body.fortunefile;
-    console.log(fortuneFile);
-    if (fortuneFile) {
+    res.locals['ping'] = await ((host != null) ? ping(host) : "");
+
+    if (!fortuneFile) {
         fortuneFile = "startrek";
     }
-
-    console.log(host);
+    
     res.locals['fortunes'] = await fortune(fortuneFile);
-    res.locals['ping'] = await ((host != null) ? ping(host) : "");
+    
     return res.render('tools', {host});
 }
 // Pings selected host based on user input, then outputs the results
@@ -25,7 +25,7 @@ async function ping(host) {
         let output = "";
         console.log("Pinging " + host);
 
-        const timer = setTimeout(() => {
+        let timer = setTimeout(() => {
             console.log("Ping timed out");
             output = "ping: unknown host " + host;
             reject(output);
@@ -60,38 +60,21 @@ async function fortune(fortuneFile) {
     
     return new Promise((resolve, reject) => {
         let cmd = "fortune " + fortuneFile;
-        let output = "";
-
-        const timer = setTimeout(() => {
-            console.log("Ping timed out");
-            output = "ping: unknown host " + host;
-            reject(output);
-        }, 5000);
-        try {
-            /* START EXAMPLE VULNERABILITY */
-            let fortuneProcess = process.exec(cmd,timeout=5000);
-            fortuneProcess.stdout.on('data', (data) => {
-                output = data.toString();
-                console.log(output);
-                console.log("Exit code: " + fortuneProcess.exitCode);
-                resolve(output);
+        let output=""
+        try{
+            process.exec(cmd,(error, stdout, stderr) => {
+                if (error) {
+                  console.error(`exec error: ${error}`);
+                  reject(output);
+                }
+                resolve(stdout)
             });
-            fortuneProcess.stderr.on('data', (data) => {
-                console.log("Error: " + data.toString());
-                reject(data.toString());
-            });
-            fortuneProcess.on('close', (code) => {
-                console.log("Exit code: " + code);
-                clearTimeout(timer);
-                resolve(output);
-            });
-            /* END EXAMPLE VULNERABILITY */
         }
-        catch (err){
-            console.error(err);
+        catch(err)
+        {
+            console.log(err);
+            resolve(output);
         }
-    
-    
 })
 }
 

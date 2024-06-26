@@ -1,23 +1,53 @@
+const crypto = require('crypto');
+const moment = require('moment');
+
 class User {
     constructor(username, password, dateCreated, lastLogin, blabName,realName) {
         this.username = username;
-        this.password = password;
+        this.password = crypto.createHash('md5').update(password).digest("hex");
         this.dateCreated = dateCreated;
         this.lastLogin = lastLogin;
         this.blabName = blabName;
         this.realName = realName;
     }
+
+    getUserName() { return this.username; }
+
+    getPassword() { return this.password; }
+
+    getPasswordHint() { return this.password_hint; }
+
+    getLastLogin() { return this.lastLogin; }
+
+    getDateCreated() { return this.dateCreated; }
+
+    getRealName() { return this.realName; }
+
+    getBlabName() { return this.blabName; }
+
+
+
+
+    setTimestamp(index, date) {
+        if (!(date instanceof Date)) {
+            throw new Error('Invalid date object');
+        }
+        this.params[index - 1] = date.toISOString();
+    }
+
+    
+
 }
 
 function create(username, blabName,realName)
-{
-    password = username
-    dateCreated = null //moment.now().format("YYYY-MM-DD hh:mm:ss")
-    lastLogin = null;
-    return new User(username, password/*hashlib.md5(password.encode('utf-8')).hexdigest()*/, username, dateCreated, lastLogin, blabName, realName);
-}
+    {
+        let password = username;
+        let dateCreated = new Date()
+        let lastLogin = null;
 
-module.exports = {
-    create,
-    User,
-}
+        return new User(username, password, dateCreated, lastLogin, blabName,realName);
+    }
+
+
+
+module.exports = {User, create}

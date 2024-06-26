@@ -1,61 +1,46 @@
+const moment = require('moment')
 const fs = require('fs');
 const axios = require('axios');
 const mariadb = require('mariadb');
+const dbconnector = require('../utils/dbconnector.js');
+const User = require('../utils/User.js');
+const readline = require('readline');
 
-
-function create(username, password, realName) {
-    return {
-        username: username,
-        password:  password,
-        realName: realName,
-        dateCreated: new Date(),
-        lastLogin: new Date(),
-        blabName: username
-    }
-}
 
 const users = [
-    create("admin", "admin", "Mr. Administrator"),
-		create("john", "John", "John Smith"),
-        create("paul", "Paul", "Paul Farrington"),
-        create("chrisc", "Chris", "Chris Campbell"),
-        create("laurie", "Laurie", "Laurie Mercer"),
-        create("nabil", "Nabil", "Nabil Bousselham"),
-        create("julian", "Julian", "Julian Totzek-Hallhuber"),
-        create("joash", "Joash", "Joash Herbrink"),
-        create("andrzej", "Andrzej", "Andrzej Szaryk"),
-        create("april", "April", "April Sauer"),
-        create("armando", "Armando", "Armando Bioc"),
-        create("ben", "Ben", "Ben Stoll"),
-        create("brian", "Brian", "Brian Pitta"),
-        create("caitlin", "Caitlin", "Caitlin Johanson"),
-        create("christraut", "Chris Trautwein", "Chris Trautwein"),         
-        create("christyson", "Chris Tyson", "Chris Tyson"),
-        create("clint", "Clint", "Clint Pollock"),
-        create("clyde", "Clyde", "Clyde Shtino"),
-        create("cody", "Cody", "Cody Bertram"),
-        create("derek", "Derek", "Derek Chowaniec"),
-        create("eric", "Eric", "Eric Ghilani"),
-        create("glenn", "Glenn", "Glenn Whittemore"),
-        create("grant", "Grant", "Grant Robinson"),
-        create("gregory", "Gregory", "Gregory Wolford"),
-        create("jacob", "Jacob", "Jacob Martel"),
-        create("jeremy", "Jeremy", "Jeremy Anderson"),
-        create("johnny", "Johnny", "Johnny Wong"),
-        create("kevin", "Kevin", "Kevin Rise"),
-        create("kevinliu", "Kevin", "Kevin Liu"),
-        create("scottrum", "Scott Rumrill", "Scott Rumrill"),
-        create("stuart", "Stuart", "Stuart Sessions"),
-        create("scottsim", "Scott Simpson", "Scott Simpson")
-]
-
-const pool = mariadb.createPool({
-    host: '127.0.0.1',
-    port: '3306',
-    user: 'admin',
-    password: 'admin',
-    database: 'users'
-});
+        User.create("admin", "admin", "Mr. Administrator"),
+		User.create("john", "John", "John Smith"),
+        User.create("paul", "Paul", "Paul Farrington"),
+        User.create("chrisc", "Chris", "Chris Campbell"),
+        User.create("laurie", "Laurie", "Laurie Mercer"),
+        User.create("nabil", "Nabil", "Nabil Bousselham"),
+        User.create("julian", "Julian", "Julian Totzek-Hallhuber"),
+        User.create("joash", "Joash", "Joash Herbrink"),
+        User.create("andrzej", "Andrzej", "Andrzej Szaryk"),
+        User.create("april", "April", "April Sauer"),
+        User.create("armando", "Armando", "Armando Bioc"),
+        User.create("ben", "Ben", "Ben Stoll"),
+        User.create("brian", "Brian", "Brian Pitta"),
+        User.create("caitlin", "Caitlin", "Caitlin Johanson"),
+        User.create("christraut", "Chris Trautwein", "Chris Trautwein"),         
+        User.create("christyson", "Chris Tyson", "Chris Tyson"),
+        User.create("clint", "Clint", "Clint Pollock"),
+        User.create("clyde", "Clyde", "Clyde Shtino"),
+        User.create("cody", "Cody", "Cody Bertram"),
+        User.create("derek", "Derek", "Derek Chowaniec"),
+        User.create("eric", "Eric", "Eric Ghilani"),
+        User.create("glenn", "Glenn", "Glenn Whittemore"),
+        User.create("grant", "Grant", "Grant Robinson"),
+        User.create("gregory", "Gregory", "Gregory Wolford"),
+        User.create("jacob", "Jacob", "Jacob Martel"),
+        User.create("jeremy", "Jeremy", "Jeremy Anderson"),
+        User.create("johnny", "Johnny", "Johnny Wong"),
+        User.create("kevin", "Kevin", "Kevin Rise"),
+        User.create("kevinliu", "Kevin", "Kevin Liu"),
+        User.create("scottrum", "Scott Rumrill", "Scott Rumrill"),
+        User.create("stuart", "Stuart", "Stuart Sessions"),
+        User.create("scottsim", "Scott Simpson", "Scott Simpson")
+];
 
 
 async function reset (req,res) {
@@ -88,8 +73,141 @@ function showReset(req,res)
     return res.render('reset',{});
 }
 
-async function processReset(req,res)
-{
+async function recreateDatabaseSchema() {
+    /*console.log("Reading database schema from file");
+    let schemaSQL = fs.readFileSync("blab_schema.sql", "utf8");
+
+   
+    connect = await mariadb.createConnection(dbconnector.getConnectionParams()); */
+
+    // let filepath = path.join(__dirname, '../../blab_schema.sql');
+    let filepath = 'blab_schema.sql';
+    // let filepath = path.join(__dirname, '../../blab_schema.sql');
+    let skipString = '--|\/\\*';
+    skipString = skipString.replaceAll("(?=[]\\[+&!(){}^\"~*?:\\\\])", "\\\\");
+    let regex = new RegExp("^(" + skipString + ").*?");
+    // let filestring = fs.readFileSync(filepath);
+    const filestream = fs.createReadStream(filepath);
+    const rl = readline.createInterface({
+        input: filestream,
+        crlfDelay: Infinity,
+    });
+    let lines = []
+    let filestring = '';
+    for await (const line of rl) {
+        if (!regex.test(line)) {
+            filestring += line;
+        }
+    }
+    lines = filestring.split(';')
+    let connect;
+    try {
+        connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+
+        for (sql of lines) {
+            sql = sql.trim();
+            if (sql) {
+                console.log("Executing: " + sql);
+                await connect.query(sql);
+            }
+        }
+    } catch (err) {
+        console.error(err);
+    } finally {
+        try {
+            if (connect) {
+                await connect.close();
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+
+}
+async function processReset(req,res) {
+
+    let confirm = req.body.confirm;
+    let primary = req.body.primary;
+
+    console.log("Entering processReset");
+
+    let connect = null;
+    let usersStatement = null;
+    let listenersStatement = null;
+    let blabsStatement = null;
+    let commentsStatement = null;
+    let now =  moment().format("YYYY-MM-DD HH:mm:ss")
+
+
+
+
+    // Drop existing tables and reUser.create from schema file
+    await recreateDatabaseSchema();
+
+    try {
+        console.log("Getting Database connection");
+        // Get the Database Connection
+        // Class.forName("com.mysql.jdbc.Driver");
+        connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+        // Adding users
+        try {
+            await connect.beginTransaction();
+            try {
+                console.log("Preparing the Statement for adding users");
+                
+                let usersStatement = await connect.prepare("INSERT INTO users (username, password, password_hint, created_at, last_login, real_name, blab_name) values (?, ?, ?, ?, ?, ?, ?);");
+                
+                for (u of users) {
+                    console.log("Adding user " + u.getUserName());
+                    await usersStatement.execute([u.getUserName(),
+                        u.getPassword(),
+                        u.getPasswordHint(),
+                        u.getDateCreated(),
+                        u.getLastLogin(),
+                        u.getRealName(),
+                        u.getBlabName()
+                    ]);
+                }
+                await connect.commit();
+
+            } catch (err) {
+                console.error("Error loading data, reverting changes: ", err);
+                await connect.rollback();
+            }
+            // Adding listeners
+            try {
+                console.log("Preparing the Statement for adding listeners");
+
+                let listenersStatement = await connect.prepare("INSERT INTO listeners (blabber, listener, status) values (?, ?, 'Active');");
+                for (let i = 1; i < users.length; i++) {
+                    for (let j = 1; j < users.length; j++) {
+                        let randomUser = users[Math.floor(Math.random() * (users.length - 1)) + 1];
+                        if (Math.random() < 0.5 && randomUser !== users[i]) {
+                            let blabber = users[i].getUserName();
+                            let listener = randomUser.getUserName();
+                            console.log("Adding " + listener + " as a listener of " + blabber);
+                            await listenersStatement.execute([blabber, listener]);
+                        }
+                    }
+                }
+                await connect.commit();
+            } catch (err) {
+                console.error("Error loading data, reverting changes: ", err);
+                await connect.rollback();
+            }
+            // Adding blabs
+        } catch (err) {
+            console.error(err);
+        }
+    } catch (err) {
+        console.error(err);
+    }
+    console.log(connect);
+        
+    res.redirect('/reset');
+}
+/*
     const confirm = req.body.confirm;
 
     if (confirm == null)
@@ -99,28 +217,28 @@ async function processReset(req,res)
     }
     console.log("Entering processReset");
 
-    // Drop existing tables and recreate from schema file
+    // Drop existing tables and reUser.create from schema file
     // TODO: Implement Vulnerability (Shell Injection)
     // https://docs.python.org/2/library/subprocess.html#frequently-used-arguments
-    let connection;
+    
     try {
         console.log("Getting Database connection...");
-        connection = await pool.getConnection();
+        let connection = await mariadb.User.createConnection(dbconnector.getConnectionParams());
         // Adding the listeners
         console.log("Preparing the statement for adding users");
-        const usersStatement = `INSERT INTO users (username, password, password_hint, created_at, last_login, real_name, blab_name)
-        VALUES ($1,$2,$3,$4,$5,$6,$7)`;
+        const userDetails = User.create();
+        const { username, password, password_hint, User.created_at, last_login, real_name, blab_name } = userDetails;
+
+        const usersStatement = `INSERT INTO users (username, password, password_hint, User.created_at, last_login, real_name, blab_name) 
+        VALUES ('${username}', '${password}', '${password_hint}', '${User.created_at}', '${last_login}', '${real_name}', '${blab_name}');`;
 
         if (users[0].password == "21232f297a57a5a743894a0e4a801fc3") {
             console.log("Encryption successful!");
         }
-        for (let user of users) {
-            console.log("Adding user " + users.username);
-            await client.query(usersStatement, [
-                user.username, user.password, user.password_hint, user.created_at,
-                user.lastLogin, user.realName, user.blabName
-            ]);
-        }
+        
+        console.log("Adding user " + users.username);
+        await connection.query(usersStatement);
+        
         console.log("Preparing the statement for adding listeners");
         const listenersStatement = `INSERT INTO listeners (blabber, listener)
         VALUES ($1,$2, 'Active')`;
@@ -129,7 +247,7 @@ async function processReset(req,res)
             for (let listener of users.slice(1)) {
                 if (random.boolean() && (blabber.username !== listener.username)) {
                     console.log("Adding listener " + blabber.username + " to " + listener.username);
-                    await client.query(listenersStatement, [
+                    await connection.query(listenersStatement, [
                         blabber.username, listener.username
                     ]);
                 }
@@ -154,7 +272,7 @@ async function processReset(req,res)
         console.log("Reading comments from file");
         const commentsContent = fs.readFile("comments.txt");
         // Adding comments
-        console.log("Preparing the statement for adding comments");
+        console.log("Preparing the statement for adding commqents");
         const commentsStatement = `INSERT INTO comments (blabber, content, timestamp)
         VALUES (?,?, datetime('now'))`;
 
@@ -172,11 +290,9 @@ async function processReset(req,res)
         console.log("Database Reset... Great Success!");
     } catch (e) {
         console.error("Unexpected Error:", e);
-    } finally {
-        if (connection) connection.release();
     }
 
-    res.redirect('/reset');
-}
+    res.redirect('/reset');*/
+
 
 module.exports = { showReset, processReset };

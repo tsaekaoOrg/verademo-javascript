@@ -1,8 +1,6 @@
 const crypto = require('crypto');
 const moment = require('moment');
 
-const crypto = require('crypto');
-
 class User {
     constructor(username, password, dateCreated, lastLogin, blabName,realName) {
         this.username = username;
@@ -37,23 +35,19 @@ class User {
         this.params[index - 1] = date.toISOString();
     }
 
+    
+
 }
 
 function create(username, blabName,realName)
-{
-    let password = username;
-    let dateCreated = new Date()
-    let lastLogin = null;
-
-    return new User(username, password, dateCreated, lastLogin, blabName,realName);
-
-    create(userName, blabName, realName) {
-        let password = userName;
-        let dateCreated = moment().format("YYYY-MM-DD HH:mm:ss");
+    {
+        let password = username;
+        let dateCreated = new Date()
         let lastLogin = null;
 
-        return new User(userName, password, dateCreated, lastLogin, blabName, realName)
+        return new User(username, password, dateCreated, lastLogin, blabName,realName);
     }
-}
 
-module.exports = User
+
+
+module.exports = {User, create}

@@ -36,6 +36,8 @@ async function showFeed(req, res){
 
     console.log("User is Logged In - continuing... UA=", req.headers['user-agent'], " U=", username);
     let connect = null;
+    let blabsForMe = null;
+    let blabsByMe = null;
     
     try {
         console.log("Getting Database connection");
@@ -50,12 +52,14 @@ async function showFeed(req, res){
 
         // Store them in the Model
         feedBlabs = [];
+        let author;
+        let post;
         for (item of blabsForMeResults) {
-            let author = new Blabber();
+            author = new Blabber();
             author.setUsername(item['username']);
             author.setBlabName(item['blab_name']);
 
-            let post = new Blab();
+            post = new Blab();
             post.setId(item['blabid']);
             post.setContent(item['content']);
             post.setPostDate(item['timestamp']);
@@ -87,12 +91,14 @@ async function showFeed(req, res){
     } catch (err) {
         console.error("Error connecting to database and querying data: ", err);
     } finally {
-        if (connect) connect.end(err => {
-            if(err) {
-               console.log("SQL error in closing connection: ", err);
-            }
-         })
-    }
+		try {
+			if (connect) {
+				await connect.close();
+			}
+		} catch (err) {
+			console.error(err);
+		}
+	}
     return res.render('feed',{});
 }
 async function getMoreFeed(req,res){
@@ -144,16 +150,24 @@ async function getMoreFeed(req,res){
         }        
     } catch (ex) {
         console.error(ex);
-    }
+    } finally {
+		try {
+			if (connect) {
+				await connect.close();
+			}
+		} catch (err) {
+			console.error(err);
+		}
+	}
     return res.send(ret)
 
 }
 async function processFeed(req, res){
-    blab = req.body['blab']
-    nextView = "feed";
-    console.log("Entering processBlab");
+    let blab = req.body['blab']
+    let nextView = "feed";
+    console.log("Entering processFeed");
 
-    username = req.session.username;
+    let username = req.session.username;
     // Ensure user is logged in
     if (username == null) {
         console.log("User is not Logged In - redirecting...");
@@ -163,7 +177,7 @@ async function processFeed(req, res){
 
     let connect = null;
     let addBlab = null;
-    addBlabSql = "INSERT INTO blabs (blabber, content, timestamp) values (?, ?, ?);";
+    let addBlabSql = "INSERT INTO blabs (blabber, content, timestamp) values (?, ?, ?);";
 
     try {
         console.log("Getting Database connection");
@@ -176,7 +190,7 @@ async function processFeed(req, res){
         
         //addBlab.setTimestamp(3, new Timestamp(now.getTime()));
         console.log("Executing the addBlab Prepared Statement");
-        let addBlabResult = addBlab.execute([username, blab, now]); //Need to implement Timestamps
+        let addBlabResult = await addBlab.execute([username, blab, now]); //Need to implement Timestamps
 
         // If there is a record...
         if (addBlabResult) {
@@ -196,7 +210,7 @@ async function processFeed(req, res){
         }
         try {
             if (connect != null) {
-                connect.close();
+                await connect.close();
             }
         } catch (exceptSql) {
             console.error(exceptSql);
@@ -284,7 +298,7 @@ async function showBlab(req,res)
         }
         try {
             if (connect != null) {
-                connect.close();
+                await connect.close();
             }
         } catch (exceptSql) {
             console.error(exceptSql);
@@ -347,7 +361,7 @@ async function processBlab(req,res)
         }
         try {
             if (connect != null) {
-                connect.close();
+                await connect.close();
             }
         } catch (exceptSql) {
             console.error(exceptSql);
@@ -425,7 +439,7 @@ async function showBlabbers(req,res){
         }
         try {
             if (connect != null) {
-                connect.close();
+                await connect.close();
             }
         } catch (exceptSql) {
             console.error(exceptSql);
@@ -487,7 +501,7 @@ async function processBlabbers(req,res){
         }
         try {
             if (connect != null) {
-                connect.close();
+                await connect.close();
             }
         } catch (exceptSql) {
             console.error(exceptSql);

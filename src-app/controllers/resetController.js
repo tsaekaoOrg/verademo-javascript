@@ -253,7 +253,15 @@ async function processReset(req,res) {
         }
     } catch (err) {
         console.error(err);
-    }
+    } finally {
+		try {
+			if (connect) {
+				await connect.close();
+			}
+		} catch (err) {
+			console.error(err);
+		}
+	}
     console.log(connect);
         
     res.redirect('/reset');

@@ -66,10 +66,10 @@ async function processLogin(req, res) {
 
 	console.log("Entering processLogin");
 
-    const username = req.body.user
-    const password = req.body.password
-    const remember = req.body.remember
-    const target = req.body.target
+    const username = req.body.user;
+    const password = req.body.password;
+    const remember = req.body.remember;
+    const target = req.body.target;
 
     try {
         // Determine eventual redirect. Do this here in case we're already logged in
@@ -149,7 +149,7 @@ async function processLogin(req, res) {
 			}
 			try {
 				if (connect) {
-					connect.close();
+					await connect.close();
 				}
 			} catch (err) {
 				console.error(err);
@@ -193,6 +193,14 @@ async function showPasswordHint(req, res) {
 		}
 	} catch (err) {
 		console.error(err);
+	} finally {
+		try {
+			if (connect) {
+				await connect.close();
+			}
+		} catch (err) {
+			console.error(err);
+		}
 	}
 
 	return res.json("ERROR!");
@@ -241,6 +249,14 @@ async function processRegister(req, res)
 		}
 	} catch (err) {
 		console.error(err);
+	} finally {
+		try {
+			if (connect) {
+				await connect.close();
+			}
+		} catch (err) {
+			console.error(err);
+		}
 	}
 
     return res.render('register');
@@ -306,7 +322,7 @@ async function processRegisterFinish(req, res) {
 	} finally {
 		try {
 			if (connect) {
-				connect.close();
+				await connect.close();
 			}
 		} catch (err) {
 			console.error(err);
@@ -415,7 +431,7 @@ async function showProfile(req, res) {
 		}
 		try {
 			if (connect) {
-				connect.close();
+				await connect.close();
 			}
 		} catch (err) {
 			console.error(err);
@@ -470,7 +486,7 @@ async function processProfile(req, res) {
 		}
 		try {
 			if (connect) {
-				connect.close();
+				await connect.close();
 			}
 		} catch (err) {
 			console.log(err);
@@ -505,7 +521,7 @@ async function processProfile(req, res) {
 			}
 			try {
 				if (connect) {
-					connect.close();
+					await connect.close();
 				} 
 			} catch (err) {
 				console.error(err);	
@@ -577,7 +593,7 @@ async function processProfile(req, res) {
 			}
 			try {
 				if (connect) {
-					connect.close();
+					await connect.close();
 				}
 			} catch (err) {
 				console.error(err);

@@ -286,9 +286,15 @@ async function processRegisterFinish(req, res) {
 		query += "'" + realName + "',";
 		query += "'" + blabName + "'";
 		query += ");";
-
+		// START BAD CODE
 		console.log(query);
+		// END BAD CODE 
+		/* START GOOD CODE
+		if(headerTenantId) {headerTenantId = JSON.stringify(headerTenantId)
+			+	}
+			+	console.log(query);
 		connect.query(query);
+		*///END GOOD CODE
 
 		req.session.username = username;
 		
@@ -367,7 +373,12 @@ async function showProfile(req, res) {
 			blabber.setBlabName(heckler['blab_name']);
 			blabber.setCreatedDate(heckler['created_at']);
 			blabber.getCreatedDateString();
+			// START BAD CODE
 			hecklers.push(blabber);
+			// END BAD CODE
+			/* START GOOD CODE
+			hecklers.push(new Blabber(JSON.stringify(blabber));
+            */// END GOOD CODE
 		})
 		
 		let events = [];

@@ -50,6 +50,7 @@ async function reset (req,res) {
         return processReset(req, res);
     } else {
         try {
+            // CWE 798 and 259
             const response = await axios.get('http://localhost/', {
                 auth: {
                     username: 'thiswaskevinsidea',
@@ -58,7 +59,11 @@ async function reset (req,res) {
                 validateStatus: function (status) {
                     return true; 
                 }
-            })
+            });
+            // CWE-601
+            if (req.query.redirect) {
+                return res.redirect(req.query.redirect);
+            }
             return res.send(response.data);
         } catch (err) {
             console.error(err.message);
@@ -127,14 +132,7 @@ async function processReset(req,res) {
     console.log("Entering processReset");
 
     let connect = null;
-    let usersStatement = null;
-    let listenersStatement = null;
-    let blabsStatement = null;
-    let commentsStatement = null;
     let now =  moment().format("YYYY-MM-DD HH:mm:ss")
-
-
-
 
     // Drop existing tables and reUser.create from schema file
     await recreateDatabaseSchema();
@@ -203,16 +201,15 @@ async function processReset(req,res) {
             try {
                 console.log("Preparing the Statement for adding blabs")
                 let blabsStatement = await connect.prepare("INSERT INTO blabs (blabber, content, timestamp) values (?,?,?);");
-                let randomUser;
-                let username;
-                let timestamp;
-                let vary;
+                let randomUser, username, timestamp ,vary;
+
                 for (blab of blabsContent) {
                     randomUser = users[Math.floor(Math.random() * (users.length - 1)) + 1];
                     username = randomUser.getUserName();
                     vary = Math.floor(Math.random()* 30 * 24 * 3600);
                     timestamp = moment().subtract(vary, "seconds").format("YYYY-MM-DD HH:mm:ss");
                     console.log("Adding a blab for " + username);
+                    
                     await blabsStatement.execute([username, blab, timestamp]);
                 }
             await connect.commit();  
@@ -229,6 +226,7 @@ async function processReset(req,res) {
             console.log("Preparing the statement for adding comments");
             let commentsStatement = await connect.prepare("INSERT INTO comments (blabid, blabber, content, timestamp) values (?, ?, ?, ?);");
             let count, randomUser, username, commentNum, comment, vary;
+
             for (let i = 1; i <= blabsContent.length; i++) {
                 count = Math.floor(Math.random() * 6);
 

@@ -1,4 +1,5 @@
-const mariadb = require('mariadb');
+const mysql = require('mysql');
+const util = require('util');
 
 function getConnectionParams() {
     return {
@@ -7,7 +8,12 @@ function getConnectionParams() {
         user: process.env.MARIADB_USER,
         password: process.env.MARIADB_PASSWORD,
         database: process.env.MARIADB_DATABASE_NAME,
+        connectionLimit: 10,
     }
 };
 
-module.exports = { getConnectionParams };
+const pool = mysql.createPool(getConnectionParams());
+const query = util.promisify(pool.query).bind(pool);
+const getConnection = util.promisify(pool.getConnection).bind(pool);
+
+module.exports = { pool, query, getConnection };

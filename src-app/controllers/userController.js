@@ -1,4 +1,5 @@
-const mariadb = require('mariadb');
+const mysql = require('mysql');
+const mariadb = require('mariadb')
 const crypto = require('crypto');
 const dbconnector = require('../utils/dbconnector.js');
 const moment = require('moment')
@@ -81,12 +82,13 @@ async function processLogin(req, res) {
 			nextView = 'res.redirect("feed")';
 		}
 
-		let connect = null;
-		let sqlStatement = null;
+		// let connect = null;
+		// let sqlStatement = null;
 		try {
 			// Get the Database Connection
-			console.log("Creating the Database connection");
-			connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+			// console.log("Creating the Database connection");
+			// connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+			// connect = mysql.createConnection(dbconnector.getConnectionParams());
 
 			/* START BAD CODE */
 			// Execute the query
@@ -95,7 +97,7 @@ async function processLogin(req, res) {
 			real_name, blab_name from users where username='" + username + "' \
 			and password='" + crypto.createHash('md5').update(password).digest("hex") + "';"
 			console.log("Execute the Statement");
-			const result = await connect.query(sqlQuery);
+			const result = await dbconnector.query(sqlQuery);
 			/* END BAD CODE */
 			/* START GOOD CODE */
 			// const sqlQuery = "select * from users where username=? and password=?;";
@@ -124,8 +126,9 @@ async function processLogin(req, res) {
 				req.session.username = user["username"];
 
 				// Update last login timestamp
-				sqlStatement = await connect.prepare("UPDATE users SET last_login=NOW() WHERE username=?;");
-				await sqlStatement.execute([user['username']]);
+				// sqlStatement = await connect.prepare("UPDATE users SET last_login=NOW() WHERE username=?;");
+				// await sqlStatement.execute([user['username']]);
+				await dbconnector.query("UPDATE users SET last_login=NOW() WHERE username=?;", [user['username']])
 			} else {
 				// Login failed...
 				console.log("User Not Found");
@@ -138,7 +141,7 @@ async function processLogin(req, res) {
 			res.locals.error = err;
 			res.locals.target = target;
 			nextView = "res.render('login')";
-		} finally {
+		} /* finally {
 			try {
 				if (sqlStatement) {
 					sqlStatement.close();
@@ -150,14 +153,14 @@ async function processLogin(req, res) {
 			}
 			try {
 				if (connect) {
-					await connect.close();
+					await promiseEnd();
 				}
 			} catch (err) {
 				console.error(err);
 				res.locals.error = err;
 				res.locals.target = target
 			}
-		}
+		} */
 
 		// Redirect to the appropriate place based on login actions above
 		console.log("Redirecting to view: " + nextView);
@@ -179,11 +182,11 @@ async function showPasswordHint(req, res) {
 	}
 
 	try {
-		let connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+		// let connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 		let sql = "SELECT password_hint FROM users WHERE username = '" + username + "'";
 		console.log(sql);
 
-		let result = await connect.query(sql);
+		let result = await dbconnector.query(sql);
 		if (result.length > 0) {
 			let password = result[0]['password_hint'];
 			let formatString = "Username '" + username + "' has password: %s%s";
@@ -194,7 +197,7 @@ async function showPasswordHint(req, res) {
 		}
 	} catch (err) {
 		console.error(err);
-	} finally {
+	} /* finally {
 		try {
 			if (connect) {
 				await connect.close();
@@ -202,7 +205,7 @@ async function showPasswordHint(req, res) {
 		} catch (err) {
 			console.error(err);
 		}
-	}
+	} */
 
 	return res.json("ERROR!");
 }
@@ -236,13 +239,13 @@ async function processRegister(req, res)
         return res.render('register');
 	}
 
-	console.log("Creating the Database connection");
-	let connect = null;
+	// console.log("Creating the Database connection");
+	// let connect = null;
 	try {
-		connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+		// connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 
 		let sql = "SELECT username FROM users WHERE username = '" + username + "'";
-		let result = await connect.query(sql);
+		let result = await dbconnector.query(sql);
 		if (result.length != 0) {
 			res.locals.error = "Username '" + username + "' already exists!"
 			return res.render('register');
@@ -251,7 +254,7 @@ async function processRegister(req, res)
 		}
 	} catch (err) {
 		console.error(err);
-	} finally {
+	} /* finally {
 		try {
 			if (connect) {
 				await connect.close();
@@ -259,7 +262,7 @@ async function processRegister(req, res)
 		} catch (err) {
 			console.error(err);
 		}
-	}
+	} */
 
     return res.render('register');
 }
@@ -285,13 +288,13 @@ async function processRegisterFinish(req, res) {
 		return res.render('register')
 	}
 
-	let connect;
-	let sqlStatement;
+	// let connect;
+	// let sqlStatement;
 
 	try {
 		// Get the Database Connection
-		console.log("Creating the Database connection");
-		connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+		// console.log("Creating the Database connection");
+		// connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 
 		// /* START EXAMPLE VULNERABILITY */
 		// // Execute the query
@@ -313,7 +316,7 @@ async function processRegisterFinish(req, res) {
 			+	console.log(query);
 		
 		*///END GOOD CODE
-		connect.query(query);
+		await dbconnector.query(query);
 		req.session.username = username;
 		
 		// /* END EXAMPLE VULNERABILITY */
@@ -321,7 +324,7 @@ async function processRegisterFinish(req, res) {
 		//emailUser(username);
 	} catch (err) {
 		console.error(err);
-	} finally {
+	} /* finally {
 		try {
 			if (connect) {
 				await connect.close();
@@ -329,7 +332,7 @@ async function processRegisterFinish(req, res) {
 		} catch (err) {
 			console.error(err);
 		}
-	}
+	} */
 
 	return res.redirect("login?username=" + username);
 }
@@ -369,20 +372,21 @@ async function showProfile(req, res) {
 		return res.redirect("login?target=profile");
 	}
 
-	let connect = null;
-	let myHecklers = null;
-	let myInfo = null;
+	// let connect = null;
+	// let myHecklers = null;
+	// let myInfo = null;
 	let sqlMyHecklers = "SELECT users.username, users.blab_name, users.created_at "
 				+ "FROM users LEFT JOIN listeners ON users.username = listeners.listener "
 				+ "WHERE listeners.blabber=? AND listeners.status='Active';";
 
 	try {
-		console.log("Getting Database connection");
-		connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+		// console.log("Getting Database connection");
+		// connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 		
 		console.log(sqlMyHecklers);
-		myHecklers = await connect.prepare(sqlMyHecklers);
-		let myHecklersResults = await myHecklers.execute([username]);
+		// myHecklers = await connect.prepare(sqlMyHecklers);
+		// let myHecklersResults = await myHecklers.execute([username]);
+		let myHecklersResults = await dbconnector.query(sqlMyHecklers, [username])
 
 		let hecklers = [];
 		await myHecklersResults.forEach((heckler) => {
@@ -403,7 +407,7 @@ async function showProfile(req, res) {
 		let sqlMyEvents = "select event from users_history where blabber=\"" + username
 				+ "\" ORDER BY eventid DESC; ";
 		console.log(sqlMyEvents);
-		let userHistoryResult = await connect.query(sqlMyEvents);
+		let userHistoryResult = await dbconnector.query(sqlMyEvents);
 
 		await userHistoryResult.forEach((event) => {
 			events.push(event['event']);
@@ -411,8 +415,9 @@ async function showProfile(req, res) {
 
 		let sql = "SELECT username, real_name, blab_name FROM users WHERE username = '" + username + "'";
 		console.log(sql);
-		myInfo = await connect.prepare(sql);
-		let myInfoResults = await myInfo.execute();
+		// myInfo = await connect.prepare(sql);
+		// let myInfoResults = await myInfo.execute();
+		let myInfoResults = await dbconnector.query(sql);
 
 		res.locals.hecklers = hecklers;
 		res.locals.events = events;
@@ -423,7 +428,7 @@ async function showProfile(req, res) {
 
 	} catch (err) {
 		console.error(err)
-	} finally {
+	} /* finally {
 		try {
 			if (myHecklers) {
 				myHecklers.close();
@@ -438,7 +443,7 @@ async function showProfile(req, res) {
 		} catch (err) {
 			console.error(err);
 		}
-	}
+	} */
 
 	return res.render('profile');
 }
@@ -460,17 +465,18 @@ async function processProfile(req, res) {
 	console.log("User is Logged In - continuing... UA=" + req.get("user-agent") + " U=" + sessionUsername);
 
 	let oldUsername = sessionUsername;
-	let connect = null;
-	let update = null;
+	// let connect = null;
+	// let update = null;
 	try {
-		console.log("Getting Database connection");
-		connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+		// console.log("Getting Database connection");
+		// connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 
-		console.log("Preparing the update Prepared Statement");
-		update = await connect.prepare("UPDATE users SET real_name=?, blab_name=? WHERE username=?;");
+		// console.log("Preparing the update Prepared Statement");
+		// update = await connect.prepare("UPDATE users SET real_name=?, blab_name=? WHERE username=?;");
 		
 		console.log("Executing the update Prepared Statement");
-		let updateResult = await update.execute([realName, blabName, sessionUsername]);
+		// let updateResult = await update.execute([realName, blabName, sessionUsername]);
+		let updateResult = await dbconnector.query("UPDATE users SET real_name=?, blab_name=? WHERE username=?;", [realName, blabName, sessionUsername])
 		
 		if (updateResult.affectedRows != 1) {
 			await res.set('content-type', 'application/json');
@@ -478,7 +484,7 @@ async function processProfile(req, res) {
 		}
 	} catch (err) {
 		console.error(err);
-	} finally {
+	} /* finally {
 		try {
 			if (update) {
 				update.close();
@@ -493,27 +499,28 @@ async function processProfile(req, res) {
 		} catch (err) {
 			console.log(err);
 		}
-	}
+	} */
 
 	// Rename profile image if username changes
 	if (!(username == oldUsername)) {
 		// Check if username exists
 		let exists = false;
-		newUsername = username.toLowerCase();
+		let newUsername = username.toLowerCase();
 		try {
-			console.log("Getting Database connection");
-			connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+			// console.log("Getting Database connection");
+			// connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 
 			console.log("Preparing the duplicate username check Prepared Statement");
-			sqlStatement = await connect.prepare("SELECT username FROM users WHERE username=?");
-			let result = await sqlStatement.execute([newUsername]);
+			// sqlStatement = await connect.prepare("SELECT username FROM users WHERE username=?");
+			// let result = await sqlStatement.execute([newUsername]);
+			let result = await dbconnector.query("SELECT username FROM users WHERE username=?", [newUsername])
 			if (result.length != 0) {
 				console.info("Username: " + username + " already exists. Try again.");
 				exists = true;
 			}
 		} catch (err) {
 			console.error(err);
-		} finally {
+		} /* finally {
 			try {
 				if (sqlStatement) {
 					sqlStatement.close();
@@ -528,7 +535,7 @@ async function processProfile(req, res) {
 			} catch (err) {
 				console.error(err);	
 			}
-		}
+		} */
 		if (exists) {
 			await res.set('content-type', 'application/json');
 			return res.status(409).send("{\"message\": \"<script>alert('That username already exists. Please try another.');</script>\"}");
@@ -539,35 +546,46 @@ async function processProfile(req, res) {
 		let sqlUpdateQueries = [];
 		let renamed = false;
 		try {
-			console.log("Getting Database connection");
-			connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+			// console.log("Getting Database connection");
+			// connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+			let connect = await dbconnector.getConnection();
+			const pBeginTransaction = util.promisify(connect.beginTransaction).bind(connect);
+			const pQuery = util.promisify(connect.query).bind(connect);
+			const pCommit = util.promisify(connect.commit).bind(connect);
+			const pRollback = util.promisify(connect.rollback).bind(connect);
+			const pRelease = util.promisify(connect.release).bind(connect);
 
 			let sqlStrQueries = ["UPDATE users SET username=? WHERE username=?",
-								 "UPDATE blabs SET blabber=? WHERE blabber=?",
-								 "UPDATE comments SET blabber=? WHERE blabber=?",
-								 "UPDATE listeners SET blabber=? WHERE blabber=?",
-								 "UPDATE listeners SET listener=? WHERE listener=?",
-							  	 "UPDATE users_history SET blabber=? WHERE blabber=?"];
+								"UPDATE blabs SET blabber=? WHERE blabber=?",
+								"UPDATE comments SET blabber=? WHERE blabber=?",
+								"UPDATE listeners SET blabber=? WHERE blabber=?",
+								"UPDATE listeners SET listener=? WHERE listener=?",
+								"UPDATE users_history SET blabber=? WHERE blabber=?"];
 			
 			try {
-				await connect.beginTransaction();
+				await pBeginTransaction();
 				try {
 					for (query of sqlStrQueries) {
 						console.log("Preparing the Prepared Statement: " + query)
-						sqlUpdateQueries.push(await connect.prepare(query));
+						// sqlUpdateQueries.push(await connect.prepare(query));
+						await pQuery(query, [newUsername, oldUsername])
 					}
 
-					for (statement of sqlUpdateQueries) {
-						await statement.execute([newUsername, oldUsername]);
-					}
+					// for (statement of sqlUpdateQueries) {
+					// 	await statement.execute([newUsername, oldUsername]);
+					// }
 
-					await connect.commit();
+					await pCommit();
+					pRelease();
 				} catch (err) {
 					console.error("Error loading data, reverting changes: ", err);
-         			await connect.rollback();
+					await pRollback();
+					pRelease();
 				}
 			} catch (err) {
 				console.error("Error starting a transaction: ", err);
+				await pRollback();
+				pRelease();
 			}
 
 			oldImage = await getProfileImageFromUsername(oldUsername);
@@ -583,7 +601,7 @@ async function processProfile(req, res) {
 			renamed = true;
 		} catch (err) {
 			console.error(err);
-		} finally {
+		} /* finally {
 			try {
 				if (sqlUpdateQueries) {
 					for (statement of sqlUpdateQueries) {
@@ -600,7 +618,7 @@ async function processProfile(req, res) {
 			} catch (err) {
 				console.error(err);
 			}
-		}
+		} */
 		if (!renamed) {
 			await res.set('content-type', 'application/json');
 			return res.status(500).send("{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}");

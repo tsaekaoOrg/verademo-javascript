@@ -91,8 +91,9 @@ async function processLogin(req, res) {
 			/* START BAD CODE */
 			// Execute the query
 			console.log("Creating the Statement");
-			const sqlQuery = "select username, password, password_hint, created_at, last_login, real_name, blab_name from users where username='"
-					+ username + "';";
+			const sqlQuery = "select username, password, password_hint, created_at, last_login, \
+			real_name, blab_name from users where username='" + username + "' \
+			and password='" + crypto.createHash('md5').update(password).digest("hex") + "';"
 			console.log("Execute the Statement");
 			const result = await connect.query(sqlQuery);
 			/* END BAD CODE */
@@ -105,7 +106,7 @@ async function processLogin(req, res) {
 			/* END GOOD CODE */
 
 			// Did we find exactly 1 user that matched?
-			if (result.length == 1 && crypto.createHash('md5').update(result[0]['password']).digest("hex")) {
+			if (result.length == 1) {
 				let user = result[0];
 				console.log("User Found.");
 				// Remember the username as a courtesy.
@@ -236,8 +237,9 @@ async function processRegister(req, res)
 	}
 
 	console.log("Creating the Database connection");
+	let connect = null;
 	try {
-		let connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+		connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 
 		let sql = "SELECT username FROM users WHERE username = '" + username + "'";
 		let result = await connect.query(sql);
@@ -309,14 +311,14 @@ async function processRegisterFinish(req, res) {
 		if(headerTenantId) {headerTenantId = JSON.stringify(headerTenantId)
 			+	}
 			+	console.log(query);
-		connect.query(query);
+		
 		*///END GOOD CODE
-
+		connect.query(query);
 		req.session.username = username;
 		
 		// /* END EXAMPLE VULNERABILITY */
 
-		emailUser(username);
+		//emailUser(username);
 	} catch (err) {
 		console.error(err);
 	} finally {

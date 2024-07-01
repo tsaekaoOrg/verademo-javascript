@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const moment = require('moment');
+const speakeasy = require('speakeasy');
 
 class User {
     constructor(username, password, dateCreated, lastLogin, blabName,realName) {
@@ -18,6 +19,8 @@ class User {
     getPassword() { return this.password; }
 
     getPasswordHint() { return this.password_hint; }
+
+    gettotpSecret() { return this.totpSecret; }
 
     getLastLogin() { return this.lastLogin; }
 

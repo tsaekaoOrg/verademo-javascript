@@ -11,12 +11,12 @@
 <title>Login to Blab (TOTP)</title>
 
 <!-- Bootstrap core CSS -->
-<link href="resources/css/bootstrap.min.css" rel="stylesheet">
+<link href="/css/bootstrap.min.css" rel="stylesheet">
 <!-- Bootstrap theme -->
-<link href="resources/css/bootstrap-theme.min.css" rel="stylesheet">
+<link href="/css/bootstrap-theme.min.css" rel="stylesheet">
 
 <!-- Custom styles for this template -->
-<link href="resources/css/pwm.css" rel="stylesheet">
+<link href="/css/pwm.css" rel="stylesheet">
 
 <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 <!--[if lt IE 9]>
@@ -32,15 +32,13 @@
 		<div class="header clearfix">
 			<nav>
 				<ul class="nav nav-pills pull-right">
-					<li role="presentation"><a href="reset">Reset</a></li>
-					<li role="presentation"><a href="login" class="active">Login</a></li>
-					<li role="presentation"><a href="register">Register</a></li>
+					<li role="presentation"><a href="/reset">Reset</a></li>
+					<li role="presentation"><a href="/login" class="active">Login</a></li>
+					<li role="presentation"><a href="/register">Register</a></li>
 				</ul>
 			</nav>
-			<img src="resources/images/Tokyoship_Talk_icon.svg" height="100"
-				width="100">
+			<img src="/images/Tokyoship_Talk_icon.svg" height="100" width="100">
 		</div>
-
 
 	</div>
 
@@ -50,18 +48,11 @@
 			<h3>Login (TOTP)</h3>
 		</div>
 
-		<%
-			String error = (String) request.getAttribute("error");
-			if (null != error) {
-		%>
+		{{#if error}}
 		<div class="alert alert-danger" role="alert">
-			<%=error%>
+			{{error}}
 		</div>
-
-		<%
-			}
-		%>
-
+		{{/if}}
 
 		<div class="row">
 			<div class="col-md-12">
@@ -71,18 +62,19 @@
 						<h3 class="panel-title">Please provide your TOTP code to login to Blab</h3>
 					</div>
 					<div class="panel-body">
-						<form method="POST" action="<%= request.getAttribute("javax.servlet.forward.request_uri") %>">
+						<form method="POST" action="{{request_uri}}">
 							<table class="table table-condensed">
 								<tbody>
 									<tr>
 										<td>TOTP Code</td>
-										<td><div class="form-group">
-												<input type="text" class="form-control" name="totpcode"
-													value="">
+										<td>
+											<div class="form-group">
+												<input type="text" class="form-control" name="totpcode" value="">
+											</div>
+										</td>
 									</tr>
 									<tr>
-										<td><button type="submit" class="btn btn-primary"
-												id="submit" name="Submit" value="Login">Submit</button></td>
+										<td><button type="submit" class="btn btn-primary" id="submit" name="Submit" value="Login">Submit</button></td>
 										<td></td>
 									</tr>
 								</tbody>
@@ -95,8 +87,9 @@
 	</div>
 
 	<script>
-		var totpSecret = '${totpSecret}';
+		var totpSecret = '{{totpSecret}}';
 		console.log("TOTP Secret: " + totpSecret);
 	</script>
 </body>
 </html>
+

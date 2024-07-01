@@ -66,4 +66,8 @@ router.route('/reset')
   .get(resetController.showReset)
   .post(resetController.processReset)
 
+router.route('/totp')
+  .get(userController.showTOTP)
+  .post(userController.processTOTP)
+  
 module.exports = router;

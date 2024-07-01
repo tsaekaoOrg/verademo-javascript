@@ -3,6 +3,7 @@ const mariadb = require('mariadb')
 const crypto = require('crypto');
 const dbconnector = require('../utils/dbconnector.js');
 const moment = require('moment')
+const speakeasy = require('speakeasy')
 const Blabber = require('../models/Blabber.js');
 const fs = require('fs');
 var nodemailer = require('nodemailer');
@@ -122,13 +123,24 @@ async function processLogin(req, res) {
 
 					await updateInResponse(currentUser, res);
 				}
+				// If user ends with totp (totp handling), add the totp login setup
+				if (username.slice(-4).toLowerCase() == 'totp') {
+					console.log("User " + username + " Has TOTP Enabled!");
+					req.session.totp_username = user["username"];
+					nextView = "res.redirect('totp')";
+				} else {
+					console.log("Setting session username to: " + username);
+					req.session.username = user["username"];
+					await dbconnector.query("UPDATE users SET last_login=NOW() WHERE username=?;", [user['username']])
+				}
 
-				req.session.username = user["username"];
+
+				// req.session.username = user["username"];
 
 				// Update last login timestamp
 				// sqlStatement = await connect.prepare("UPDATE users SET last_login=NOW() WHERE username=?;");
 				// await sqlStatement.execute([user['username']]);
-				await dbconnector.query("UPDATE users SET last_login=NOW() WHERE username=?;", [user['username']])
+				
 			} else {
 				// Login failed...
 				console.log("User Not Found");
@@ -211,34 +223,35 @@ async function showPasswordHint(req, res) {
 }
 async function showTOTP(req, res) {
 	const username = req.session.totp_username;
-	console.log("Entering showTOTP with username: " + username);
+	console.log("Entering showTOTP");
+	console.log("The username " + username);
 
 	let connect, totpSecret, sql, userRecord; 
 	
 
 	try {
-		connect = await mysql.createConnection(dbconnector.getConnectionParams());
+		// connect = await mysql.createConnection(dbconnector.getConnectionParams());
 		console.log("Creating Database connection");
 
-		[sql] = await connect.execute('SELECT totp_secret FROM users WHERE username = ?', [username]);
+		result = await dbconnector.query('SELECT totp_secret FROM users WHERE username = ?', [username]);
 
-		userRecord = sql[0];
+		userRecord = result[0];
 
-		if (userRecord) {
+		if (userRecord.totp_secret) {
 			totpSecret = userRecord.totp_secret;
             console.log("Totp Secret: " + totpSecret);
 		} else {
 			console.log("TOTP not found, generating secret!");
 			totpSecret = speakeasy.generateSecret({ length: 20 }).base32;
 
-			await connect.execute('UPDATE users SET totp_secret = ? WHERE username = ?', [totpSecret, username]);
+			await dbconnector.query('UPDATE users SET totp_secret = ? WHERE username = ?', [totpSecret, username]);
 			console.log("TOTP Secret set and updated!");
 		}
-		await connect.end();
+
 	} catch (err) {
 		console.error("Error creating database connection: " + err);
 	}
-	res.render('totp', { totpSecret });
+	return res.render('totp', { totpSecret });
 }
 
 async function processTOTP(req, res) {
@@ -246,17 +259,17 @@ async function processTOTP(req, res) {
 	const totpCode = req.body.totpcode;
 	console.log("Entering processTOTP with username: " + username + " and totpCode: " + totpCode);
 
-	let nextView = 'redirect:/login';
+	let nextView = "res.render('login')";
 	let connect, result, userRecord, totpSecret;
 
 	try {
-		connect = await mysql.createConnection(dbconnector.getConnectionParams());
+		// connect = await mysql.createConnection(dbconnector.getConnectionParams());
 		console.log("Creating Database connection");
-		[result] = await connect.execute('SELECT totp_secret FROM users WHERE username = ?', [username]);
+		result = await dbconnector.query('SELECT totp_secret FROM users WHERE username = ?', [username]);
 
 		userRecord = result[0];
 
-		if (userRecord) {
+		if (userRecord.totp_secret) {
 			totpSecret = userRecord.totp_secret;
 			console.log("Totp Secret: " + totpSecret);
 
@@ -269,7 +282,7 @@ async function processTOTP(req, res) {
 			if (verified) {
 				console.log("TOTP code verified successfully!");
                 req.session.username = username;
-                nextView ='redirect:/feed';
+                nextView = "res.render('feed')";
 			} else {
 				console.log("TOTP code verification failed!");
                 req.session.username = null;
@@ -278,11 +291,11 @@ async function processTOTP(req, res) {
 		} else {
 			console.log("Failed to find TOTP in Database!")
 		}
-		await connect.end();
+		
 	} catch (err) {
 		console.error("Error creating the Database connection: " + err);
 	}
-	res.redirect(nextView);
+	return eval(nextView);
 }
 
 async function processLogout(req, res) {
@@ -375,9 +388,10 @@ async function processRegisterFinish(req, res) {
 		// // Execute the query
 		mysqlCurrentDateTime = moment().format("YYYY-MM-DD HH:mm:ss")
 
-		let query = "insert into users (username, password, created_at, real_name, blab_name) values(";
+		let query = "insert into users (username, password, totp_secret, created_at, real_name, blab_name) values(";
 		query += "'" + username + "',";
 		query += "'" + crypto.createHash('md5').update(password).digest("hex") + "',";
+		query += "'" + speakeasy.generateSecret({ length: 20 }).base32 + "',";
 		query += "'" + mysqlCurrentDateTime + "',";
 		query += "'" + realName + "',";
 		query += "'" + blabName + "'";
@@ -488,7 +502,7 @@ async function showProfile(req, res) {
 			events.push(event['event']);
 		})
 
-		let sql = "SELECT username, real_name, blab_name FROM users WHERE username = '" + username + "'";
+		let sql = "SELECT username, real_name, blab_name, totp_secret FROM users WHERE username = '" + username + "'";
 		console.log(sql);
 		// myInfo = await connect.prepare(sql);
 		// let myInfoResults = await myInfo.execute();
@@ -500,6 +514,7 @@ async function showProfile(req, res) {
 		res.locals.image = await getProfileImageFromUsername(myInfoResults[0]['username']);
 		res.locals.realName = myInfoResults[0]['real_name'];
 		res.locals.blabName = myInfoResults[0]['blab_name'];
+		res.locals.totpSecret = myInfoResults[0]['totp_secret'];
 
 	} catch (err) {
 		console.error(err)
@@ -795,5 +810,7 @@ module.exports = {
 	processProfile,
 	downloadImage,
 	showPasswordHint,
+	showTOTP,
+	processTOTP
 };
 

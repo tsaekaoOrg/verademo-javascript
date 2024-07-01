@@ -10,6 +10,7 @@ const util = require('util');
 
 const users = [
         User.create("admin", "admin", "Mr. Administrator"),
+        User.create("admin-totp", "admin-totp", "Admin with TOTP"), 
 		User.create("john", "John", "John Smith"),
         User.create("paul", "Paul", "Paul Farrington"),
         User.create("chrisc", "Chris", "Chris Campbell"),
@@ -80,13 +81,12 @@ function showReset(req,res)
 }
 
 async function recreateDatabaseSchema() {
-    // let filepath = path.join(__dirname, '../../blab_schema.sql');
+
     let filepath = 'blab_schema.sql';
-    // let filepath = path.join(__dirname, '../../blab_schema.sql');
     let skipString = '--|\/\\*';
     skipString = skipString.replaceAll("(?=[]\\[+&!(){}^\"~*?:\\\\])", "\\\\");
     let regex = new RegExp("^(" + skipString + ").*?");
-    // let filestring = fs.readFileSync(filepath);
+    
     const filestream = fs.createReadStream(filepath);
     const rl = readline.createInterface({
         input: filestream,
@@ -158,11 +158,12 @@ async function processReset(req,res) {
                 
                 for (u of users) {
                     console.log("Adding user " + u.getUserName());
-                    await pQuery("INSERT INTO users (username, password, password_hint, created_at, last_login, real_name, blab_name) values (?, ?, ?, ?, ?, ?, ?);",
+                    await pQuery("INSERT INTO users (username, password, password_hint, totp_secret, created_at, last_login, real_name, blab_name) values (?, ?, ?, ?, ?, ?, ?, ?);",
                     [
                         u.getUserName(),
                         u.getPassword(),
                         u.getPasswordHint(),
+                        u.gettotpSecret(),
                         u.getDateCreated(),
                         u.getLastLogin(),
                         u.getRealName(),
@@ -253,7 +254,7 @@ async function processReset(req,res) {
                     }
                 }
                 await pCommit();
-                pRelease();
+                // pRelease();
                 console.log("Success!");
             } catch (err) {
                 console.error("Error loading data, reverting changes: ", err);

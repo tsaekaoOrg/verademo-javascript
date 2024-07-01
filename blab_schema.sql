@@ -73,6 +73,7 @@ CREATE TABLE `users` (
   `username` varchar(100) NOT NULL,
   `password` varchar(100) DEFAULT NULL,
   `password_hint` varchar(100) DEFAULT NULL,
+  `totp_secret` varchar(100) DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   `last_login` datetime DEFAULT NULL,
   `real_name` varchar(100) DEFAULT NULL,

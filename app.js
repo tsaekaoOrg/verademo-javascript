@@ -1,3 +1,5 @@
+var dotenv = require('dotenv');
+dotenv.config();
 var createError = require('http-errors');
 var express = require('express');
 
@@ -9,9 +11,7 @@ var logger = require('morgan');
 const Handlebars = require('hbs')
 var session = require('express-session');
 var indexRouter = require('./routes/index');
-var dotenv = require('dotenv');
 var app = express();
-dotenv.config();
 
 const PORT = process.env.PORT || '3000';
 

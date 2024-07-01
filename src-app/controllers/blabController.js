@@ -35,20 +35,21 @@ async function showFeed(req, res){
     }
 
     console.log("User is Logged In - continuing... UA=", req.headers['user-agent'], " U=", username);
-    let connect = null;
-    let blabsForMe = null;
-    let blabsByMe = null;
+    // let connect = null;
+    // let blabsForMe = null;
+    // let blabsByMe = null;
     
     try {
         console.log("Getting Database connection");
-        connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+        // connect = await mariadb.createConnection(dbconnector.getConnectionParams());
         
 
         // Find the Blabs that this user listens to
         console.log("Preparing the BlabsForMe Prepared Statement");
-        blabsForMe = await connect.prepare(pyformat(sqlBlabsForMe, [10, 0]));
+        // blabsForMe = await connect.prepare(pyformat(sqlBlabsForMe, [10, 0]));
         console.log("Executing the BlabsForMe Prepared Statement");
-        let blabsForMeResults = await blabsForMe.execute(username);
+        // let blabsForMeResults = await blabsForMe.execute(username);
+        let blabsForMeResults = await dbconnector.query(pyformat(sqlBlabsForMe, [10, 0]), [username]);
 
         // Store them in the Model
         feedBlabs = [];
@@ -72,9 +73,10 @@ async function showFeed(req, res){
         res.locals['currentUser'] = username;
 
         // Find the Blabs by this user
-        blabsByMe = await connect.prepare(sqlBlabsByMe);
+        // blabsByMe = await connect.prepare(sqlBlabsByMe);
         console.log("Executing the BlabsByMe Prepared Statement");
-        let blabsByMeResults = await blabsByMe.execute(username);
+        // let blabsByMeResults = await blabsByMe.execute(username);
+        let blabsByMeResults = await dbconnector.query(sqlBlabsByMe, [username])
 
         // Store them in the model
         myBlabs = [];
@@ -90,7 +92,7 @@ async function showFeed(req, res){
         res.locals['blabsByMe'] = myBlabs;
     } catch (err) {
         console.error("Error connecting to database and querying data: ", err);
-    } finally {
+    } /* finally {
 		try {
 			if (connect) {
 				await connect.close();
@@ -98,7 +100,7 @@ async function showFeed(req, res){
 		} catch (err) {
 			console.error(err);
 		}
-	}
+	} */
     return res.render('feed',{});
 }
 async function getMoreFeed(req,res){
@@ -124,16 +126,19 @@ async function getMoreFeed(req,res){
     username = req.session.username;
 
     // Get the Database Connection
-    let connect;
-    let feedSql;
+    // let connect;
+    // let feedSql;
     let ret = [];
     try {
-        console.log("Creating database connection");
-        connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+        // console.log("Creating database connection");
+        // connect = await mariadb.createConnection(dbconnector.getConnectionParams());
         console.log("Creating prepared statement");
-        feedSql = await connect.prepare(pyformat(sqlBlabsForMe, [len,cnt]));
+        // feedSql = await connect.prepare(pyformat(sqlBlabsForMe, [len,cnt]));
 
-        let results = await feedSql.execute(username);
+        // let results = await feedSql.execute(username);
+        let results = await dbconnector.query(pyformat(sqlBlabsForMe, [len,cnt]), [username])
+
+        let blab;
         for (item of results)
         {
             blab = new Blab();
@@ -150,7 +155,7 @@ async function getMoreFeed(req,res){
         }        
     } catch (ex) {
         console.error(ex);
-    } finally {
+    } /* finally {
 		try {
 			if (connect) {
 				await connect.close();
@@ -158,7 +163,7 @@ async function getMoreFeed(req,res){
 		} catch (err) {
 			console.error(err);
 		}
-	}
+	} */
     return res.send(ret)
 
 }
@@ -175,22 +180,23 @@ async function processFeed(req, res){
     }
     console.log("User is Logged In - continuing... UA=" + req.headers["User-Agent"] + " U=" + username);
 
-    let connect = null;
-    let addBlab = null;
+    // let connect = null;
+    // let addBlab = null;
     let addBlabSql = "INSERT INTO blabs (blabber, content, timestamp) values (?, ?, ?);";
 
     try {
         console.log("Getting Database connection");
         // Get the Database Connection
-        connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+        // connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 
         let now = new Date();
         console.log("Preparing the addBlab Prepared Statement");
-        addBlab = await connect.prepare(addBlabSql);
+        // addBlab = await connect.prepare(addBlabSql);
         
         //addBlab.setTimestamp(3, new Timestamp(now.getTime()));
         console.log("Executing the addBlab Prepared Statement");
-        let addBlabResult = await addBlab.execute([username, blab, now]); //Need to implement Timestamps
+        // let addBlabResult = await addBlab.execute([username, blab, now]);
+        let addBlabResult = await dbconnector.query(addBlabSql, [username, blab, now]);
 
         // If there is a record...
         if (addBlabResult) {
@@ -200,7 +206,7 @@ async function processFeed(req, res){
         nextView = "feed";
     } catch (ex) {
         console.error(ex);
-    } finally {
+    } /* finally {
         try {
             if (addBlab != null) {
                 addBlab.close();
@@ -215,18 +221,18 @@ async function processFeed(req, res){
         } catch (exceptSql) {
             console.error(exceptSql);
         }
-    }
+    } */
 
     return res.redirect(nextView);
 }
 
 async function showBlab(req,res)
 {
-    blabid = req.query.blabid;
-    nextView = 'res.redirect("feed");';
+    let blabid = req.query.blabid;
+    let nextView = 'res.redirect("feed");';
 	console.log("Entering showBlab");
 
-	username = req.session.username;
+	let username = req.session.username;
     // Ensure user is logged in
     if (username == null) {
         console.log("User is not Logged In - redirecting...");
@@ -235,27 +241,32 @@ async function showBlab(req,res)
 
     console.log("User is Logged In - continuing... UA=" + req.headers["User-Agent"] + " U=" + username);
 
-    let connect = null;
-    let blabDetails = null;
-    let blabComments = null;
-    blabDetailsSql = "SELECT blabs.content, users.blab_name "
+    // let connect = null;
+    // let blabDetails = null;
+    // let blabComments = null;
+    const blabDetailsSql = "SELECT blabs.content, users.blab_name "
             + "FROM blabs INNER JOIN users ON blabs.blabber = users.username " + "WHERE blabs.blabid = ?;";
 
-    blabCommentsSql = "SELECT users.username, users.blab_name, comments.content, comments.timestamp "
+    const blabCommentsSql = "SELECT users.username, users.blab_name, comments.content, comments.timestamp "
             + "FROM comments INNER JOIN users ON comments.blabber = users.username "
             + "WHERE comments.blabid = ? ORDER BY comments.timestamp DESC;";
 
     try {
         console.log("Getting Database connection");
-        connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+        // connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 
         // Find the Blabs that this user listens to
         console.log("Preparing the blabDetails Prepared Statement");
-        blabDetails = await connect.prepare(blabDetailsSql);
+        // blabDetails = await connect.prepare(blabDetailsSql);
         console.log("Executing the blabDetails Prepared Statement");
-        blabDetailsResults = await blabDetails.execute(blabid);
+        // blabDetailsResults = await blabDetails.execute(blabid);
+        let blabDetailsResults = await dbconnector.query(blabDetailsSql, [blabid]);
 
         // If there is a record...
+        let blabCommentsResults;
+        let comments;
+        let author;
+        let comment;
         for (item of blabDetailsResults) {
             // Get the blab contents
             res.locals['content'] = item['content'];
@@ -263,18 +274,19 @@ async function showBlab(req,res)
             res.locals['blabid'] = blabid;
             // Now lets get the comments...
             console.log("Preparing the blabComments Prepared Statement");
-            blabComments = await connect.prepare(blabCommentsSql);
+            // blabComments = await connect.prepare(blabCommentsSql);
             console.log("Executing the blabComments Prepared Statement");
-            blabCommentsResults = await blabComments.execute(blabid);
+            // blabCommentsResults = await blabComments.execute(blabid);
+            blabCommentsResults = await dbconnector.query(blabCommentsSql, [blabid])
 
             // Store them in the model
             comments = [];
             for (item of blabCommentsResults) {
-                let author = new Blabber();
+                author = new Blabber();
                 author.setUsername(item['username']);
                 author.setBlabName(item['blab_name']);
 
-                let comment = new Comment();
+                comment = new Comment();
                 comment.setContent(item['content']);
                 comment.setTimestamp(item['timestamp']);
                 comment.setAuthor(author);
@@ -288,7 +300,7 @@ async function showBlab(req,res)
 
     } catch (ex) {
         console.error(ex);
-    } finally {
+    } /* finally {
         try {
             if (blabDetails != null) {
                 blabDetails.close();
@@ -303,7 +315,7 @@ async function showBlab(req,res)
         } catch (exceptSql) {
             console.error(exceptSql);
         }
-    }
+    } */
 
     return eval(nextView);
 }
@@ -323,25 +335,25 @@ async function processBlab(req,res)
     }
 
     console.log("User is Logged In - continuing... UA=" + req.headers["User-Agent"] + " U=" + username);
-    let connect = null;
-    let addComment = null;
+    // let connect = null;
+    // let addComment = null;
     let addCommentSql = "INSERT INTO comments (blabid, blabber, content, timestamp) values (?, ?, ?, ?);";
 
     try {
         console.log("Getting Database connection");
         // Get the Database Connection
-        connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+        // connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 
         const now = new Date();
 
         //
         console.log("Preparing the addComment Prepared Statement");
-        addComment = await connect.prepare(addCommentSql);
+        // addComment = await connect.prepare(addCommentSql);
         const timestamp = moment().format('YYYY-MM-DD HH:mm:ss')
 
         console.log("Executing the addComment Prepared Statement");
-        let addCommentResult = await addComment.execute([blabid,username,comment,timestamp]); //Change null to datetime
-
+        // let addCommentResult = await addComment.execute([blabid,username,comment,timestamp]); //Change null to datetime
+        let addCommentResult = await dbconnector.query(addCommentSql, [blabid,username,comment,timestamp])
         // If there is a record...
         if (addCommentResult) {
             // failure
@@ -351,7 +363,7 @@ async function processBlab(req,res)
         nextView = 'res.redirect("blab?blabid=' + blabid + '");';
     } catch (ex) {
         console.error(ex);
-    } finally {
+    } /* finally {
         try {
             if (addComment != null) {
                 addComment.close();
@@ -366,7 +378,7 @@ async function processBlab(req,res)
         } catch (exceptSql) {
             console.error(exceptSql);
         }
-    }
+    } */
 
     return eval(nextView);
     
@@ -392,8 +404,8 @@ async function showBlabbers(req,res){
 
     console.log("User is Logged In - continuing... UA=" + req.headers["User-Agent"] + " U=" + username);
 
-    let connect = null;
-    let blabberQuery = null;
+    // let connect = null;
+    // let blabberQuery = null;
 
     /* START EXAMPLE VULNERABILITY */
     const blabbersSql = "SELECT users.username," + " users.blab_name," + " users.created_at,"
@@ -405,16 +417,18 @@ async function showBlabbers(req,res){
     try {
         console.log("Getting Database connection");
         // Get the Database Connection
-        connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+        // connect = await mariadb.createConnection(dbconnector.getConnectionParams());
         // Find the Blabbers
         console.log(blabbersSql);
-        blabberQuery = await connect.prepare(blabbersSql);
-        let blabbersResults = await blabberQuery.execute([username,username]);
+        // blabberQuery = await connect.prepare(blabbersSql);
+        // let blabbersResults = await blabberQuery.execute([username,username]);
+        let blabbersResults = await dbconnector.query(blabbersSql, [username, username])
         /* END EXAMPLE VULNERABILITY */
 
         let blabbers = [];
+        let blabber;
         for (result of blabbersResults) {
-            let blabber = new Blabber();
+            blabber = new Blabber();
             blabber.setBlabName(result['blab_name']);
             blabber.setUsername(result['username']);
             blabber.setCreatedDate(result['created_at']);
@@ -429,7 +443,7 @@ async function showBlabbers(req,res){
 
     } catch (err) {
         console.error(err);
-    } finally {
+    } /* finally {
         try {
             if (blabberQuery != null) {
                 blabberQuery.close();
@@ -444,7 +458,7 @@ async function showBlabbers(req,res){
         } catch (exceptSql) {
             console.error(exceptSql);
         }
-    }
+    } */
 
     return eval(nextView);
 }
@@ -472,18 +486,19 @@ async function processBlabbers(req,res){
     console.log("blabberUsername = " + blabberUsername);
     console.log("command = " + command);
 
-    let connect = null;
-    let action = null;
+    // let connect = null;
+    // let action = null;
 
     try {
         console.log("Getting Database connection");
         // Get the Database Connection
-        connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+        // connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 
         /* START EXAMPLE VULNERABILITY */
         let module = String(ucfirst(command)) + "Command";
         const cmdClass = eval(module);
-        let cmdObj = new cmdClass(connect, username);
+        // let cmdObj = new cmdClass(connect, username);
+        let cmdObj = new cmdClass(username);
         await cmdObj.execute(blabberUsername);
         /* END EXAMPLE VULNERABILITY */
 
@@ -491,7 +506,7 @@ async function processBlabbers(req,res){
 
     } catch (err) {
         console.error(err);
-    } finally {
+    } /* finally {
         try {
             if (action != null) {
                 action.close();
@@ -506,7 +521,7 @@ async function processBlabbers(req,res){
         } catch (exceptSql) {
             console.error(exceptSql);
         }
-    }
+    } */
     return eval(nextView);
 }
 

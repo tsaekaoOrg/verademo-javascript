@@ -6,6 +6,7 @@ class User {
         this.username = username;
         this.password = crypto.createHash('md5').update(password).digest("hex");
         this.password_hint = username;
+        this.totpSecret = speakeasy.generateSecret({ length: 20 }).base32;
         this.dateCreated = dateCreated;
         this.lastLogin = lastLogin;
         this.blabName = blabName;

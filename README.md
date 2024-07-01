@@ -1,4 +1,4 @@
-# VeraDemo - Blab-a-Gag (Django-Python)
+# VeraDemo - Blab-a-Gag (Express-JS)
 
 ### Notice
 
@@ -25,34 +25,38 @@ Blab-a-Gag is a fairly simple forum type application which allows:
 ## Run
 
 If you don't already have Docker this is a prerequisite.
+(NOTE: Currently only local development is supported)
 
 To build the container run this:
 
-    docker pull cshtino/verademo;
-    docker build --no-cache -t verademo-python .
+    
 
 To run the container for local development run this:
 
-    docker run --rm -p 8080:8080 --name verademo verademo-python
+    docker compose up -d
+    docker compose watch
 
-Navigate to: `http://127.0.0.1:8080`.
+Navigate to: `http://127.0.0.1:8000`.
 
 Then register as a new user and add some feeds
 
-## Run locally without Docker (Linux/Mac only)
+## Run locally without Docker (Linux/Mac only) (BETA)
 
-To run the program locally without using docker run this:
+To run the program locally without using docker:
+    Change the ``.env`` file to say ``MARIADB_HOST = 'localhost'``
+Then:
 
-    python3 -m venv env
-    source env/bin/activate
-    pip install -r requirements.txt
-    python manage.py runserver
+    npm install
+    docker compose up -d
+
+Next, turn off the `verademo-javascript-app-1` container.
+
+Navigate to: `http://127.0.0.1:8000`
 
 To be able to use the fortune feature in tools (Linux exclusive), run this before running the server:
 
     apt-get install -y fortune-mod
-
-Navigate to: `http://127.0.0.1:8000`
+    
 
 ## Exploitation Demos
 

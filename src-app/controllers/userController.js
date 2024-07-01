@@ -209,6 +209,81 @@ async function showPasswordHint(req, res) {
 
 	return res.json("ERROR!");
 }
+async function showTOTP(req, res) {
+	const username = req.session.totp_username;
+	console.log("Entering showTOTP with username: " + username);
+
+	let connect, totpSecret, sql, userRecord; 
+	
+
+	try {
+		connect = await mysql.createConnection(dbconnector.getConnectionParams());
+		console.log("Creating Database connection");
+
+		[sql] = await connect.execute('SELECT totp_secret FROM users WHERE username = ?', [username]);
+
+		userRecord = sql[0];
+
+		if (userRecord) {
+			totpSecret = userRecord.totp_secret;
+            console.log("Totp Secret: " + totpSecret);
+		} else {
+			console.log("TOTP not found, generating secret!");
+			totpSecret = speakeasy.generateSecret({ length: 20 }).base32;
+
+			await connect.execute('UPDATE users SET totp_secret = ? WHERE username = ?', [totpSecret, username]);
+			console.log("TOTP Secret set and updated!");
+		}
+		await connect.end();
+	} catch (err) {
+		console.error("Error creating database connection: " + err);
+	}
+	res.render('totp', { totpSecret });
+}
+
+async function processTOTP(req, res) {
+	const username = req.session.totp_username;
+	const totpCode = req.body.totpcode;
+	console.log("Entering processTOTP with username: " + username + " and totpCode: " + totpCode);
+
+	let nextView = 'redirect:/login';
+	let connect, result, userRecord, totpSecret;
+
+	try {
+		connect = await mysql.createConnection(dbconnector.getConnectionParams());
+		console.log("Creating Database connection");
+		[result] = await connect.execute('SELECT totp_secret FROM users WHERE username = ?', [username]);
+
+		userRecord = result[0];
+
+		if (userRecord) {
+			totpSecret = userRecord.totp_secret;
+			console.log("Totp Secret: " + totpSecret);
+
+			const verified = speakeasy.totp.verify({
+				secret : totpSecret,
+				encoding : 'base32',
+				token : totpCode
+			});
+
+			if (verified) {
+				console.log("TOTP code verified successfully!");
+                req.session.username = username;
+                nextView ='redirect:/feed';
+			} else {
+				console.log("TOTP code verification failed!");
+                req.session.username = null;
+				req.session.totp_username = null;
+			}
+		} else {
+			console.log("Failed to find TOTP in Database!")
+		}
+		await connect.end();
+	} catch (err) {
+		console.error("Error creating the Database connection: " + err);
+	}
+	res.redirect(nextView);
+}
 
 async function processLogout(req, res) {
 	console.log("Entering processLogout");

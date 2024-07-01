@@ -5,6 +5,7 @@ const mariadb = require('mariadb');
 const dbconnector = require('../utils/dbconnector.js');
 const User = require('../utils/User.js');
 const readline = require('readline');
+const util = require('util');
 
 
 const users = [
@@ -99,20 +100,20 @@ async function recreateDatabaseSchema() {
         }
     }
     lines = filestring.split(';')
-    let connect;
+    // let connect;
     try {
-        connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+        // connect = await mariadb.createConnection(dbconnector.getConnectionParams());
 
         for (sql of lines) {
             sql = sql.trim();
             if (sql) {
                 console.log("Executing: " + sql);
-                await connect.query(sql);
+                await dbconnector.query(sql);
             }
         }
     } catch (err) {
         console.error(err);
-    } finally {
+    } /* finally {
         try {
             if (connect) {
                 await connect.close();
@@ -120,7 +121,7 @@ async function recreateDatabaseSchema() {
         } catch (err) {
             console.error(err);
         }
-    }
+    } */
 
 
 }
@@ -131,7 +132,7 @@ async function processReset(req,res) {
 
     console.log("Entering processReset");
 
-    let connect = null;
+    // let connect = null;
     let now =  moment().format("YYYY-MM-DD HH:mm:ss")
 
     // Drop existing tables and reUser.create from schema file
@@ -141,18 +142,25 @@ async function processReset(req,res) {
         console.log("Getting Database connection");
         // Get the Database Connection
         // Class.forName("com.mysql.jdbc.Driver");
-        connect = await mariadb.createConnection(dbconnector.getConnectionParams());
+        let connect = await dbconnector.getConnection();
+        const pBeginTransaction = await util.promisify(connect.beginTransaction).bind(connect);
+        const pQuery = await util.promisify(connect.query).bind(connect);
+        const pCommit = await util.promisify(connect.commit).bind(connect);
+        const pRollback = await util.promisify(connect.rollback).bind(connect);
+        const pRelease = await util.promisify(connect.release).bind(connect);
         // Adding users
         try {
-            await connect.beginTransaction();
+            await pBeginTransaction();
             try {
                 console.log("Preparing the Statement for adding users");
                 
-                let usersStatement = await connect.prepare("INSERT INTO users (username, password, password_hint, created_at, last_login, real_name, blab_name) values (?, ?, ?, ?, ?, ?, ?);");
+                // let usersStatement = await connect.prepare("INSERT INTO users (username, password, password_hint, created_at, last_login, real_name, blab_name) values (?, ?, ?, ?, ?, ?, ?);");
                 
                 for (u of users) {
                     console.log("Adding user " + u.getUserName());
-                    await usersStatement.execute([u.getUserName(),
+                    await pQuery("INSERT INTO users (username, password, password_hint, created_at, last_login, real_name, blab_name) values (?, ?, ?, ?, ?, ?, ?);",
+                    [
+                        u.getUserName(),
                         u.getPassword(),
                         u.getPasswordHint(),
                         u.getDateCreated(),
@@ -161,17 +169,17 @@ async function processReset(req,res) {
                         u.getBlabName()
                     ]);
                 }
-                await connect.commit();
-
+                await pCommit();
             } catch (err) {
                 console.error("Error loading data, reverting changes: ", err);
-                await connect.rollback();
+                await pRollback();
+                pRelease();
             }
             // Adding listeners
             try {
                 console.log("Preparing the Statement for adding listeners");
 
-                let listenersStatement = await connect.prepare("INSERT INTO listeners (blabber, listener, status) values (?, ?, 'Active');");
+                // let listenersStatement = await connect.prepare("INSERT INTO listeners (blabber, listener, status) values (?, ?, 'Active');");
                 let randomUser;
                 let listener;
                 let blabber;
@@ -182,14 +190,15 @@ async function processReset(req,res) {
                             blabber = users[i].getUserName();
                             listener = randomUser.getUserName();
                             console.log("Adding " + listener + " as a listener of " + blabber);
-                            await listenersStatement.execute([blabber, listener]);
+                            await pQuery("INSERT INTO listeners (blabber, listener, status) values (?, ?, 'Active');", [blabber, listener]);
                         }
                     }
                 }
-                await connect.commit();
+                await pCommit();
             } catch (err) {
                 console.error("Error loading data, reverting changes: ", err);
-                await connect.rollback();
+                await pRollback();
+                pRelease();
             }
             // Fetching blabs
             console.log("Reading blabs from file");
@@ -200,7 +209,7 @@ async function processReset(req,res) {
             // Adding blabs
             try {
                 console.log("Preparing the Statement for adding blabs")
-                let blabsStatement = await connect.prepare("INSERT INTO blabs (blabber, content, timestamp) values (?,?,?);");
+                // let blabsStatement = await connect.prepare("INSERT INTO blabs (blabber, content, timestamp) values (?,?,?);");
                 let randomUser, username, timestamp ,vary;
 
                 for (blab of blabsContent) {
@@ -210,50 +219,55 @@ async function processReset(req,res) {
                     timestamp = moment().subtract(vary, "seconds").format("YYYY-MM-DD HH:mm:ss");
                     console.log("Adding a blab for " + username);
                     
-                    await blabsStatement.execute([username, blab, timestamp]);
+                    await pQuery("INSERT INTO blabs (blabber, content, timestamp) values (?,?,?);", [username, blab, timestamp]);
                 }
-            await connect.commit();  
+                await pCommit();  
             } catch (err) {
                 console.error("Error loading data, reverting changes: ", err);
-                await connect.rollback();
+                await pRollback();
+                pRelease();
             } 
-        // Comments
-        try {
-            // Fetching comments
-            console.log("Reading comments from file");
-            let commentsContent = fs.readFileSync("resources/files/comments.txt", 'utf8').split('\n');
-            // Adding comments
-            console.log("Preparing the statement for adding comments");
-            let commentsStatement = await connect.prepare("INSERT INTO comments (blabid, blabber, content, timestamp) values (?, ?, ?, ?);");
-            let count, randomUser, username, commentNum, comment, vary;
+            // Comments
+            try {
+                // Fetching comments
+                console.log("Reading comments from file");
+                let commentsContent = fs.readFileSync("resources/files/comments.txt", 'utf8').split('\n');
+                // Adding comments
+                console.log("Preparing the statement for adding comments");
+                // let commentsStatement = await connect.prepare("INSERT INTO comments (blabid, blabber, content, timestamp) values (?, ?, ?, ?);");
+                let count, randomUser, username, commentNum, comment, vary;
 
-            for (let i = 1; i <= blabsContent.length; i++) {
-                count = Math.floor(Math.random() * 6);
+                for (let i = 1; i <= blabsContent.length; i++) {
+                    count = Math.floor(Math.random() * 6);
 
-                for (let j = 0; j < count; j++) {
-                    console.log("Adding a comment for " + username + " on blab ID " + i.toString());
-                    randomUser = users[Math.floor(Math.random() * (users.length - 1)) + 1];
-                    username = randomUser.getUserName();
-                    vary = Math.floor(Math.random()* 30 * 24 * 3600);
-                    timestamp = moment().subtract(vary, "seconds").format("YYYY-MM-DD HH:mm:ss");
-                    commentNum = Math.floor(Math.random() * commentsContent.length);
-                    comment = commentsContent[commentNum];
-            
-                    await commentsStatement.execute([i, username, comment, timestamp]);
+                    for (let j = 0; j < count; j++) {
+                        console.log("Adding a comment for " + username + " on blab ID " + i.toString());
+                        randomUser = users[Math.floor(Math.random() * (users.length - 1)) + 1];
+                        username = randomUser.getUserName();
+                        vary = Math.floor(Math.random()* 30 * 24 * 3600);
+                        timestamp = moment().subtract(vary, "seconds").format("YYYY-MM-DD HH:mm:ss");
+                        commentNum = Math.floor(Math.random() * commentsContent.length);
+                        comment = commentsContent[commentNum];
+                
+                        await pQuery("INSERT INTO comments (blabid, blabber, content, timestamp) values (?, ?, ?, ?);", [i, username, comment, timestamp]);
+                    }
                 }
+                await pCommit();
+                pRelease();
+                console.log("Success!");
+            } catch (err) {
+                console.error("Error loading data, reverting changes: ", err);
+                await pRollback();
+                pRelease();
             }
-            await connect.commit();
         } catch (err) {
             console.error("Error loading data, reverting changes: ", err);
-            await connect.rollback();
-        }
-        } catch (err) {
-            console.error("Error loading data, reverting changes: ", err);
-            await connect.rollback();
+            await pRollback();
+            pRelease();
         }
     } catch (err) {
         console.error(err);
-    } finally {
+    } /* finally {
 		try {
 			if (connect) {
 				await connect.close();
@@ -261,9 +275,9 @@ async function processReset(req,res) {
 		} catch (err) {
 			console.error(err);
 		}
-	}
-    console.log(connect);
-        
+	} */
+    // console.log(connect);
+    console.log("Reset complete");
     res.redirect('/reset');
 }
 

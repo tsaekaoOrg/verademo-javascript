@@ -443,7 +443,7 @@ async function showProfile(req, res) {
 	return res.render('profile');
 }
 
-async function processProfile(req, res) {
+async function processProfile(req, response) {
 	console.log("Entering processProfile");
 
 	const realName = req.body.realName;
@@ -454,7 +454,7 @@ async function processProfile(req, res) {
 	let sessionUsername = req.session.username;
 	if (!sessionUsername) {
 		console.log("User is not Logged In - redirecting...");
-		return res.redirect("login?target=profile");
+		return response.redirect("login?target=profile");
 	}
 
 	console.log("User is Logged In - continuing... UA=" + req.get("user-agent") + " U=" + sessionUsername);
@@ -473,8 +473,8 @@ async function processProfile(req, res) {
 		let updateResult = await update.execute([realName, blabName, sessionUsername]);
 		
 		if (updateResult.affectedRows != 1) {
-			await res.set('content-type', 'application/json');
-			return res.status(500).send("{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}");
+			await response.set('content-type', 'application/json');
+			return response.status(500).send("{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}");
 		}
 	} catch (err) {
 		console.error(err);
@@ -530,8 +530,8 @@ async function processProfile(req, res) {
 			}
 		}
 		if (exists) {
-			await res.set('content-type', 'application/json');
-			return res.status(409).send("{\"message\": \"<script>alert('That username already exists. Please try another.');</script>\"}");
+			await response.set('content-type', 'application/json');
+			return response.status(409).send("{\"message\": \"<script>alert('That username already exists. Please try another.');</script>\"}");
 		}
 
 		// Attempt to update username
@@ -602,19 +602,19 @@ async function processProfile(req, res) {
 			}
 		}
 		if (!renamed) {
-			await res.set('content-type', 'application/json');
-			return res.status(500).send("{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}");
+			await response.set('content-type', 'application/json');
+			return response.status(500).send("{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}");
 		}
 
 		// Update all session and cookie logic
 		req.session.username = username;
-		res.cookie('username', username);
+		response.cookie('username', username);
 
 		// Update remember me functionality
 		let currentUser = await createFromRequest(req);
 		if (currentUser) {
 			currentUser.username = username;
-			await updateInResponse(currentUser, res);
+			await updateInResponse(currentUser, response);
 		}
 	}
 
@@ -639,11 +639,11 @@ async function processProfile(req, res) {
 	}
 
 	let msg = `Successfully changed values!\\\\nusername: ${username.toLowerCase()}\\\\nReal Name: ${realName}\\\\nBlab Name: ${blabName}`;
-	let response = `{\"values\": {\"username\": \"${username.toLowerCase()}\", \"realName\": \"${realName}\", \"blabName\": \"${blabName}\"}, \"message\": \"<script>alert('`
+	let res = `{\"values\": {\"username\": \"${username.toLowerCase()}\", \"realName\": \"${realName}\", \"blabName\": \"${blabName}\"}, \"message\": \"<script>alert('`
 			+ msg + `');</script>\"}`;
 
-	await res.set('content-type', 'application/json');
-	return res.status(200).send(response);
+	await response.set('content-type', 'application/json');
+	return response.status(200).send(res);
 
 }
 

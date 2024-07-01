@@ -265,8 +265,24 @@ async function processTOTP(req, res) {
 				encoding : 'base32',
 				token : totpCode
 			});
+
+			if (verified) {
+				console.log("TOTP code verified successfully!");
+                req.session.username = username;
+                nextView ='redirect:/feed';
+			} else {
+				console.log("TOTP code verification failed!");
+                req.session.username = null;
+				req.session.totp_username = null;
+			}
+		} else {
+			console.log("Failed to find TOTP in Database!")
 		}
-	} catch (err) {}
+		await connect.end();
+	} catch (err) {
+		console.error("Error creating the Database connection: " + err);
+	}
+	res.redirect(nextView);
 }
 
 async function processLogout(req, res) {

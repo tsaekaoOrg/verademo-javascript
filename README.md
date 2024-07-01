@@ -36,24 +36,27 @@ To run the container for local development run this:
     docker compose up -d
     docker compose watch
 
-Navigate to: `http://127.0.0.1:8080`.
+Navigate to: `http://127.0.0.1:8000`.
 
 Then register as a new user and add some feeds
 
-## Run locally without Docker (Linux/Mac only)
+## Run locally without Docker (Linux/Mac only) (BETA)
 
-To run the program locally without using docker run this:
+To run the program locally without using docker:
+    Change the ``.env`` file to say ``MARIADB_HOST = 'localhost'``
+Then:
 
-    python3 -m venv env
-    source env/bin/activate
     npm install
-    python manage.py runserver
+    docker compose up -d
+
+Next, turn off the `verademo-javascript-app-1` container.
+
+Navigate to: `http://127.0.0.1:8000`
 
 To be able to use the fortune feature in tools (Linux exclusive), run this before running the server:
 
     apt-get install -y fortune-mod
-
-Navigate to: `http://127.0.0.1:8000`
+    
 
 ## Exploitation Demos
 

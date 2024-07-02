@@ -1,7 +1,6 @@
 const moment = require('moment')
 const fs = require('fs');
 const axios = require('axios');
-const mariadb = require('mariadb');
 const dbconnector = require('../utils/dbconnector.js');
 const User = require('../utils/User.js');
 const readline = require('readline');

@@ -5,7 +5,6 @@ var express = require('express');
 
 var path = require('path');
 var axios = require('axios');
-var mariadb = require('mariadb')
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const Handlebars = require('hbs')

@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const moment = require('moment');
 const speakeasy = require('speakeasy');
 
 class User {

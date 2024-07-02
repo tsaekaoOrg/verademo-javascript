@@ -1,5 +1,4 @@
 const process = require('child_process');
-const { TIMEOUT } = require('dns');
 
 // Loads tools page
 function showTools(req, res) {

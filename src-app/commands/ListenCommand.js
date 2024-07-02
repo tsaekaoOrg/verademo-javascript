@@ -1,11 +1,7 @@
 const dbconnector = require('../utils/dbconnector.js');
 
 class ListenCommand {
-    // constructor(connect, username) {
-    //     console.log("Listen command");
-    //     this.connect = connect;
-    //     this.username = username;
-    // }
+
 	constructor(username) {
         console.log("Listen command");
         this.username = username;
@@ -14,10 +10,7 @@ class ListenCommand {
     async execute(blabberUsername) {
         let sqlQuery = "INSERT INTO listeners (blabber, listener, status) values (?, ?, 'Active');";
 		console.log(sqlQuery);
-		let action;
 		try {
-			// action = await this.connect.prepare(sqlQuery);
-			// await action.execute([blabberUsername,this.username]);
 			await dbconnector.query(sqlQuery, [blabberUsername, this.username])
 
 			sqlQuery = "SELECT blab_name FROM users WHERE username = '" + blabberUsername + "'";
@@ -35,7 +28,6 @@ class ListenCommand {
 
 			
 		} catch (err) {
-			// TODO Auto-generated catch block
 			console.error(err);
 		}
     }

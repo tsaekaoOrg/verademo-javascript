@@ -100,10 +100,7 @@ async function recreateDatabaseSchema() {
         }
     }
     lines = filestring.split(';')
-    // let connect;
     try {
-        // connect = await mariadb.createConnection(dbconnector.getConnectionParams());
-
         for (sql of lines) {
             sql = sql.trim();
             if (sql) {
@@ -113,17 +110,7 @@ async function recreateDatabaseSchema() {
         }
     } catch (err) {
         console.error(err);
-    } /* finally {
-        try {
-            if (connect) {
-                await connect.close();
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    } */
-
-
+    } 
 }
 async function processReset(req,res) {
 
@@ -131,9 +118,6 @@ async function processReset(req,res) {
     let primary = req.body.primary;
 
     console.log("Entering processReset");
-
-    // let connect = null;
-    let now =  moment().format("YYYY-MM-DD HH:mm:ss")
 
     // Drop existing tables and reUser.create from schema file
     await recreateDatabaseSchema();
@@ -153,9 +137,7 @@ async function processReset(req,res) {
             await pBeginTransaction();
             try {
                 console.log("Preparing the Statement for adding users");
-                
-                // let usersStatement = await connect.prepare("INSERT INTO users (username, password, password_hint, created_at, last_login, real_name, blab_name) values (?, ?, ?, ?, ?, ?, ?);");
-                
+
                 for (u of users) {
                     console.log("Adding user " + u.getUserName());
                     await pQuery("INSERT INTO users (username, password, password_hint, totp_secret, created_at, last_login, real_name, blab_name) values (?, ?, ?, ?, ?, ?, ?, ?);",
@@ -180,7 +162,6 @@ async function processReset(req,res) {
             try {
                 console.log("Preparing the Statement for adding listeners");
 
-                // let listenersStatement = await connect.prepare("INSERT INTO listeners (blabber, listener, status) values (?, ?, 'Active');");
                 let randomUser;
                 let listener;
                 let blabber;
@@ -210,7 +191,6 @@ async function processReset(req,res) {
             // Adding blabs
             try {
                 console.log("Preparing the Statement for adding blabs")
-                // let blabsStatement = await connect.prepare("INSERT INTO blabs (blabber, content, timestamp) values (?,?,?);");
                 let randomUser, username, timestamp ,vary;
 
                 for (blab of blabsContent) {
@@ -235,7 +215,6 @@ async function processReset(req,res) {
                 let commentsContent = fs.readFileSync("resources/files/comments.txt", 'utf8').split('\n');
                 // Adding comments
                 console.log("Preparing the statement for adding comments");
-                // let commentsStatement = await connect.prepare("INSERT INTO comments (blabid, blabber, content, timestamp) values (?, ?, ?, ?);");
                 let count, randomUser, username, commentNum, comment, vary;
 
                 for (let i = 1; i <= blabsContent.length; i++) {
@@ -254,7 +233,7 @@ async function processReset(req,res) {
                     }
                 }
                 await pCommit();
-                // pRelease();
+                pRelease();
                 console.log("Success!");
             } catch (err) {
                 console.error("Error loading data, reverting changes: ", err);
@@ -268,22 +247,11 @@ async function processReset(req,res) {
         }
     } catch (err) {
         console.error(err);
-    } /* finally {
-		try {
-			if (connect) {
-				await connect.close();
-			}
-		} catch (err) {
-			console.error(err);
-		}
-	} */
-    // console.log(connect);
+    }
+
     console.log("Reset complete");
     res.redirect('/reset');
 }
-
-
-
 
 
 module.exports = { showReset, processReset };

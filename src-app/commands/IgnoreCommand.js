@@ -1,11 +1,6 @@
 const dbconnector = require('../utils/dbconnector.js');
 
 class IgnoreCommand{
-    // constructor(connect, username) {
-    //     console.log("Ignore command");
-    //     this.connect = connect;
-    //     this.username = username;
-    // }
 	constructor(username) {
         console.log("Ignore command");
         this.username = username;
@@ -17,10 +12,6 @@ class IgnoreCommand{
 		console.log(sqlQuery);
 		let action;
 		try {
-			// action = await this.connect.prepare(sqlQuery);
-
-			// await action.execute([blabberUsername,this.username]);
-
 			await dbconnector.query(sqlQuery, [blabberUsername, this.username])
 
 			sqlQuery = "SELECT blab_name FROM users WHERE username = '" + blabberUsername + "'";
@@ -37,7 +28,6 @@ class IgnoreCommand{
             }	
 			
 		} catch (err) {
-			// TODO Auto-generated catch block
 			console.error(err);
 		}
     }

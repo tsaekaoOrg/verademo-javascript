@@ -9,13 +9,13 @@ function showTools(req, res) {
 async function processTools(req, res) {
     let host = req.body.host;
     let fortuneFile = req.body.fortunefile;
-    res.locals['ping'] = await ((host != null) ? ping(host) : "");
+    res.locals['ping'] = await ((host != null) ? ping(host).catch(function () { console.log("Promise rejected"); }) : "");
 
     if (!fortuneFile) {
         fortuneFile = "startrek";
     }
     
-    res.locals['fortunes'] = await fortune(fortuneFile);
+    res.locals['fortunes'] = await fortune(fortuneFile).catch(function () { console.log("Promise rejected"); });
     
     return res.render('tools', {host});
 }

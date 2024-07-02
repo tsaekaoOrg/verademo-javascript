@@ -259,7 +259,7 @@ async function processTOTP(req, res) {
 	const totpCode = req.body.totpcode;
 	console.log("Entering processTOTP with username: " + username + " and totpCode: " + totpCode);
 
-	let nextView = "res.render('login')";
+	let nextView = "res.redirect('login')";
 	let connect, result, userRecord, totpSecret;
 
 	try {
@@ -282,7 +282,7 @@ async function processTOTP(req, res) {
 			if (verified) {
 				console.log("TOTP code verified successfully!");
                 req.session.username = username;
-                nextView = "res.render('feed')";
+                nextView = "res.redirect('feed')";
 			} else {
 				console.log("TOTP code verification failed!");
                 req.session.username = null;

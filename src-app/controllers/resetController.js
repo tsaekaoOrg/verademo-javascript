@@ -186,7 +186,7 @@ async function processReset(req,res) {
                 let blabber;
                 for (let i = 1; i < users.length; i++) {
                     for (let j = 1; j < users.length; j++) {
-                        randomUser = users[Math.floor(Math.random() * (users.length - 1)) + 1];
+                        randomUser = users[Math.floor(Math.random() * (users.length - 2)) + 2];
                         if (Math.random() < 0.5 && randomUser !== users[i]) {
                             blabber = users[i].getUserName();
                             listener = randomUser.getUserName();
@@ -214,7 +214,7 @@ async function processReset(req,res) {
                 let randomUser, username, timestamp ,vary;
 
                 for (blab of blabsContent) {
-                    randomUser = users[Math.floor(Math.random() * (users.length - 1)) + 1];
+                    randomUser = users[Math.floor(Math.random() * (users.length - 2)) + 2];
                     username = randomUser.getUserName();
                     vary = Math.floor(Math.random()* 30 * 24 * 3600);
                     timestamp = moment().subtract(vary, "seconds").format("YYYY-MM-DD HH:mm:ss");
@@ -243,7 +243,7 @@ async function processReset(req,res) {
 
                     for (let j = 0; j < count; j++) {
                         console.log("Adding a comment for " + username + " on blab ID " + i.toString());
-                        randomUser = users[Math.floor(Math.random() * (users.length - 1)) + 1];
+                        randomUser = users[Math.floor(Math.random() * (users.length - 2)) + 2];
                         username = randomUser.getUserName();
                         vary = Math.floor(Math.random()* 30 * 24 * 3600);
                         timestamp = moment().subtract(vary, "seconds").format("YYYY-MM-DD HH:mm:ss");

@@ -33,7 +33,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'resources')));
-app.use(session({secret: "secret"}));
+app.use(session({secret: "secret", saveUninitialized: true, resave: true}));
 
 app.use('/', indexRouter);
 

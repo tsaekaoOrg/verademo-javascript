@@ -164,8 +164,8 @@ async function processReset(req,res) {
                 let randomUser;
                 let listener;
                 let blabber;
-                for (let i = 1; i < users.length; i++) {
-                    for (let j = 1; j < users.length; j++) {
+                for (let i = 2; i < users.length; i++) {
+                    for (let j = 2; j < users.length; j++) {
                         randomUser = users[Math.floor(Math.random() * (users.length - 2)) + 2];
                         if (Math.random() < 0.5 && randomUser !== users[i]) {
                             blabber = users[i].getUserName();

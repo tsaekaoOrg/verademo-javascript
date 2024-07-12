@@ -4,6 +4,7 @@ var Blab = require('../models/Blab');
 var Blabber = require('../models/Blabber');
 var Comment = require('../models/Comment');
 const moment = require('moment')
+const autoInject = require('async/autoInject.js');
 const IgnoreCommand = require('../commands/IgnoreCommand');
 const ListenCommand = require('../commands/ListenCommand');
 
@@ -250,10 +251,22 @@ async function processBlab(req,res)
     let addCommentSql = "INSERT INTO comments (blabid, blabber, content, timestamp) values (?, ?, ?, ?);";
 
     try {
-        console.log("Getting Database connection");
-
-        console.log("Preparing the addComment Prepared Statement");
-        const timestamp = moment().format('YYYY-MM-DD HH:mm:ss')
+        let timestamp;
+        console.log('Beginning AutoInject');
+        await autoInject({
+            first_function: async function(){
+                console.log("Getting Database connection");
+            },
+            second_function: async function(){
+                console.log("Preparing the addComment Prepared Statement");
+                timestamp = moment().format('YYYY-MM-DD HH:mm:ss')
+            },
+          }, function(err, result){
+            if (err){
+              // Displays error
+              console.log('Autoinject error: ' + err);
+            }
+          })
 
         console.log("Executing the addComment Prepared Statement");
         let addCommentResult = await dbconnector.query(addCommentSql, [blabid,username,comment,timestamp])

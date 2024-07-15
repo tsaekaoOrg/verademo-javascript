@@ -22,36 +22,47 @@ Blab-a-Gag is a fairly simple forum type application which allows:
 - `/tools` shows a tools page that shows a fortune or lets you ping a host.
 - `/reset` allows the user to reset the database
 
-## Run
+## Run Docker image
 
-If you don't already have Docker this is a prerequisite.
-(NOTE: Currently only local development is supported)
+If you don't already have Docker this is a prerequisite.  Make sure your Docker engine is up to date.  To check, run:
 
-To build the container run this:
+	docker compose version
 
-    
+The version should be >= 2.22.
+
+(NOTE: Currently only local development is supported - there are no images to download from Docker Hub)
+
+### Download Docker
+
+Visit [docker desktop](https://www.docker.com/products/docker-desktop/) and download your compatible version.  Follow installation instructions.  Open the Docker app. 
 
 To run the container for local development run this:
 
     docker compose up -d
     docker compose watch
 
-Navigate to: `http://127.0.0.1:8000`.
+Navigate to [http://localhost:8000](http://localhost:8000).
 
-Then register as a new user and add some feeds
+Then register as a new user and add some feeds.
 
-## Run locally without Docker (Linux/Mac only) (BETA)
+## Run locally
 
-To run the program locally without using docker:
-    Change the ``.env`` file to say ``MARIADB_HOST = 'localhost'``
+You can run a local/debug version of the app, while still using the MySQL database Docker container.  (See above for installing Docker)
+
+To run the program locally:
+    Change the ``.env`` file to say ``MYSQL_HOST = 'localhost'``
 Then:
 
     npm install
-    docker compose up -d
+    docker compose create database
+    docker compose start database
+    npm run devStart
 
-Next, turn off the `verademo-javascript-app-1` container.
+Navigate to: [http://localhost:8000](http://localhost:8000).
 
-Navigate to: `http://127.0.0.1:8000`
+Then register as a new user and add some feeds.
+
+### Fortune (TBD) ... 
 
 To be able to use the fortune feature in tools (Linux exclusive), run this before running the server:
 

@@ -1,2 +1,5 @@
 node_modules/
 resources/*
+
+# veracode cli-created package
+verademo-javascript.zip

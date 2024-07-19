@@ -166,10 +166,9 @@ async function processReset(req,res) {
                 let blabber;
                 for (let i = 2; i < users.length; i++) {
                     for (let j = 2; j < users.length; j++) {
-                        randomUser = users[Math.floor(Math.random() * (users.length - 2)) + 2];
-                        if (Math.random() < 0.5 && randomUser !== users[i]) {
+                        if (Math.random() < 0.5 && users[j] !== users[i]) {
                             blabber = users[i].getUserName();
-                            listener = randomUser.getUserName();
+                            listener = users[j].getUserName();
                             console.log("Adding " + listener + " as a listener of " + blabber);
                             await pQuery("INSERT INTO listeners (blabber, listener, status) values (?, ?, 'Active');", [blabber, listener]);
                         }

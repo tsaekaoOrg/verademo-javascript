@@ -32,4 +32,4 @@ jobs:
           docker tag $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:verademo-javascript-latest
           docker tag $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:verademo-javascript-$IMAGE_TAG
           docker push $REGISTRY/$REPOSITORY:verademo-javascript-latest
-          docker push $REGISTRY/$REPOSITORY:verademo-javascript-latest-$IMAGE_TAG
+          docker push $REGISTRY/$REPOSITORY:verademo-javascript-$IMAGE_TAG

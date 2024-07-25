@@ -10,8 +10,7 @@
 
 services:
   app:
-    image: verademo-javascript
-    container_name: app
+    container_name: verademo
     build: 
       context: ./
     depends_on:

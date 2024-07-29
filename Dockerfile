@@ -22,6 +22,4 @@ RUN apk update && apk add fortune
 #Copy rest of source files
 COPY . .
 
-
-# Runs appliation using devStart script, which uses nodemon to update app.
-CMD ["npm","run","devStart"]
+CMD ["node","app.js"]

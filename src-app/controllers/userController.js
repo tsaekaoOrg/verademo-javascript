@@ -135,8 +135,7 @@ async function processLogin(req, res) {
 
 		// Redirect to the appropriate place based on login actions above
 		console.log("Redirecting to view: " + nextView);
-		return eval(nextView);``
-    }
+		return eval(nextView);    }
     catch (err) {
         console.error(err.message);
         return res.status(500).json(err);
@@ -535,28 +534,38 @@ async function processProfile(req, response) {
 		} catch (err) {
 			console.error(err);
 		} 
-		if (!renamed) {
-			await response.set('content-type', 'application/json');
-			return response.status(500).send("{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}");
-		}
+		
+		try {
+			if (!renamed) {
+				await response.set('content-type', 'application/json');
+				return response.status(500).send("{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}");
+			}
 
-		// Update all session and cookie logic
-		req.session.username = username;
-		response.cookie('username', username);
+			// Update all session and cookie logic
+			req.session.username = username;
+			response.cookie('username', username);
 
-		// Update remember me functionality
-		let currentUser = await createFromRequest(req);
-		if (currentUser) {
-			currentUser.username = username;
-			await updateInResponse(currentUser, response);
+			// Update remember me functionality
+
+			let currentUser = await createFromRequest(req);
+			if (currentUser) {
+				currentUser.username = username;
+				await updateInResponse(currentUser, response);
+			}
+		} catch (err) {
+			console.error(err);
 		}
 	}
 
 	// Update user profile image
 	if (file) {
-		let oldImage = await getProfileImageFromUsername(username);
-		if (oldImage) {
-			fs.unlink(image_dir + oldImage, (err) => { if (err) throw err; });
+		try {
+			let oldImage = await getProfileImageFromUsername(username);
+			if (oldImage) {
+				fs.unlink(image_dir + oldImage, (err) => { if (err) throw err; });
+			}
+		} catch (err) {
+			console.error(err);
 		}
 
 		try {
@@ -576,7 +585,12 @@ async function processProfile(req, response) {
 	let res = `{\"values\": {\"username\": \"${username.toLowerCase()}\", \"realName\": \"${realName}\", \"blabName\": \"${blabName}\"}, \"message\": \"<script>alert('`
 			+ msg + `');</script>\"}`;
 
-	await response.set('content-type', 'application/json');
+	try {
+		await response.set('content-type', 'application/json');
+	} catch (err) {
+		console.error(err);
+	}
+
 	return response.status(200).send(res);
 
 }
@@ -595,8 +609,11 @@ async function downloadImage(req, res) {
 
 	let filepath = image_dir + imageName;
 	console.log("Fetching profile image: " + filepath);
-
-	await res.download(filepath);
+	try {
+		await res.download(filepath);
+	} catch (err) {
+		console.error(err);
+	}
 	return res.render('profile');
 }
 

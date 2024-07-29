@@ -119,7 +119,12 @@ async function processReset(req,res) {
     console.log("Entering processReset");
 
     // Drop existing tables and reUser.create from schema file
-    await recreateDatabaseSchema();
+    try {
+        await recreateDatabaseSchema();
+    } catch (err) {
+        console.error(err);
+    }
+    
 
     try {
         console.log("Getting Database connection");

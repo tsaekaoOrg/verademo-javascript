@@ -59,7 +59,8 @@ async function reset (req,res) {
                 },
                 validateStatus: function (status) {
                     return true; 
-                }
+                },
+                httpAgent: new httpAgent({ keepAlive: true}),
             });
             // CWE-601
             if (req.query.redirect) {

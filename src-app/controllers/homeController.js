@@ -11,6 +11,7 @@ async function renderGet(req, res) {
                 method: 'get',
                 url: 'http://' + host_ip + ':' + req.socket.localPort + '/feed',
                 maxContentLength: 5000,
+                httpAgent: new httpAgent({keepAlive: true}),
             })
         }
         return userController.showLogin(req, res)

@@ -9,14 +9,15 @@ function showTools(req, res) {
 async function processTools(req, res) {
     let host = req.body.host;
     let fortuneFile = req.body.fortunefile;
-    try {
-        res.locals['ping'] = await ((host != null) ? ping(host).catch(function () { console.log("Promise rejected"); }) : "");
+
+    res.locals['ping'] = await ((host != null) ? ping(host).catch(function () { console.log("Promise rejected"); }) : "");
 
     if (!fortuneFile) {
-        fortuneFile = 'fortunes';
+        fortuneFile = "startrek";
     }
     
     res.locals['fortunes'] = await fortune(fortuneFile).catch(function () { console.log("Promise rejected"); });
+    
     return res.render('tools', {host});
 }
 // Pings selected host based on user input, then outputs the results

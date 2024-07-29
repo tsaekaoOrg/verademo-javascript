@@ -253,7 +253,11 @@ async function processLogout(req, res) {
 	req.session.username = null;
 
 	let currentUser = null;
-	await updateInResponse(currentUser, res);
+	try {
+		await updateInResponse(currentUser, res);
+	} catch (err) {
+		console.error(err);
+	}
 
 	return res.redirect('login')
 }
@@ -476,7 +480,11 @@ async function processProfile(req, response) {
 			console.error(err);
 		}
 		if (exists) {
-			await response.set('content-type', 'application/json');
+			try {
+				await response.set('content-type', 'application/json');
+			} catch {
+				console.error(err);
+			}
 			return response.status(409).send("{\"message\": \"<script>alert('That username already exists. Please try another.');</script>\"}");
 		}
 

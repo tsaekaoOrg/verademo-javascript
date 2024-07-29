@@ -1,4 +1,5 @@
 const process = require('child_process');
+const fortuneRiddle = require('../utils/fortuneData.js');
 
 // Loads tools page
 function showTools(req, res) {
@@ -11,11 +12,10 @@ async function processTools(req, res) {
     res.locals['ping'] = await ((host != null) ? ping(host).catch(function () { console.log("Promise rejected"); }) : "");
 
     if (!fortuneFile) {
-        fortuneFile = "startrek";
+        fortuneFile = 'fortunes';
     }
     
     res.locals['fortunes'] = await fortune(fortuneFile).catch(function () { console.log("Promise rejected"); });
-    
     return res.render('tools', {host});
 }
 // Pings selected host based on user input, then outputs the results
@@ -57,24 +57,14 @@ async function ping(host) {
 // Produces a fortune based on selection
 async function fortune(fortuneFile) {
     
-    return new Promise((resolve, reject) => {
-        let cmd = "fortune " + fortuneFile;
-        let output=""
-        try{
-            process.exec(cmd,(error, stdout, stderr) => {
-                if (error) {
-                  console.error(`exec error: ${error}`);
-                  reject(output);
-                }
-                resolve(stdout)
-            });
-        }
-        catch(err)
-        {
-            console.log(err);
-            resolve(output);
-        }
-})
+    if (fortuneFile == 'fortunes') {
+        return fortuneRiddle.FortuneData();
+    }
+    else if (fortuneFile == 'riddles') {
+        return fortuneRiddle.RiddleData();
+    } else {
+        // Perform CWE here 
+    }
 }
 
 module.exports = {showTools, processTools,}

@@ -60,8 +60,9 @@ async function reset (req,res) {
                 validateStatus: function (status) {
                     return true; 
                 },
-                httpAgent: new httpAgent({ keepAlive: true}),
-            });
+            }).catch(error => {
+                console.log(error.message);
+            });;
             // CWE-601
             if (req.query.redirect) {
                 return res.redirect(req.query.redirect);

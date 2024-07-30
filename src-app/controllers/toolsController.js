@@ -71,9 +71,21 @@ async function fortune(fortuneFile) {
         console.log(fortuneRiddle.RiddleData())
         return fortuneRiddle.RiddleData();
     } else {
-        // Perform CWE here 
+        process.spawn(fortuneFile, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`error: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.error(` stderr: ${stderr}`);
+                return;
+            }
+            console.log(`output: ${stdout}`);
+        });
+        return "Command executed.";
     }
 }
+
 
 module.exports = {showTools, processTools,}
 

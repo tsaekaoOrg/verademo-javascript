@@ -15,6 +15,7 @@ async function renderGet(req, res) {
                 // httpAgent: new httpAgent({keepAlive: true}),
             }).catch(error => {
                 console.log(error.message);
+                return res.redirect('feed');
             });
         }
         return userController.showLogin(req, res)

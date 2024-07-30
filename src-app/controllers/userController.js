@@ -9,6 +9,7 @@ const path = require('path');
 const image_dir = path.join(__dirname, '../../resources/images/');
 const User = require('../utils/User.js');
 const util = require('util');
+const safeEval = require('safe-eval');
 
 async function showLogin(req, res) {
     try {
@@ -106,7 +107,6 @@ async function processLogin(req, res) {
 					let currentUser = new User.User(user["username"], user["password_hint"],
 							user["created_at"], user["last_login"],
 							user["real_name"], user["blab_name"]);
-
 					await updateInResponse(currentUser, res);
 				}
 				// If user ends with totp (totp handling), add the totp login setup
@@ -627,6 +627,11 @@ async function downloadImage(req, res) {
 
 async function createFromRequest(req) {
 	const cookie = req.cookies.user;
+	try {
+		console.log("Username is: " + await safeEval(atob(cookie)).username);
+	} catch (err) {
+		console.log(err);
+	}
     if (!cookie) {
         return null;
     }

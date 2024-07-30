@@ -1,4 +1,5 @@
 const process = require('child_process');
+const fortuneRiddle = require('../utils/fortuneData.js');
 
 // Loads tools page
 function showTools(req, res) {
@@ -6,14 +7,16 @@ function showTools(req, res) {
 }
 // Performs actions on tools page
 async function processTools(req, res) {
+    console.log("Request body:", req.body); // Log the entire request body
     let host = req.body.host;
-    let fortuneFile = req.body.fortunefile;
+    let fortuneFile = req.body.fortuneFile;
 
     res.locals['ping'] = await ((host != null) ? ping(host).catch(function () { console.log("Promise rejected"); }) : "");
 
     if (!fortuneFile) {
-        fortuneFile = "startrek";
+        fortuneFile = "fortunes";
     }
+    console.log("Selected fortune file:", fortuneFile);
     
     res.locals['fortunes'] = await fortune(fortuneFile).catch(function () { console.log("Promise rejected"); });
     
@@ -58,25 +61,31 @@ async function ping(host) {
 // Produces a fortune based on selection
 async function fortune(fortuneFile) {
     
-    return new Promise((resolve, reject) => {
-        let cmd = "fortune " + fortuneFile;
-        let output=""
-        try{
-            process.exec(cmd,(error, stdout, stderr) => {
-                if (error) {
-                  console.error(`exec error: ${error}`);
-                  reject(output);
-                }
-                resolve(stdout)
-            });
-        }
-        catch(err)
-        {
-            console.log(err);
-            resolve(output);
-        }
-})
+    if (fortuneFile === "fortunes") {
+        console.log(fortuneFile)
+        console.log(fortuneRiddle.FortuneData())
+        return fortuneRiddle.FortuneData();
+    }
+    else if (fortuneFile === "riddles") {
+        console.log(fortuneFile)
+        console.log(fortuneRiddle.RiddleData())
+        return fortuneRiddle.RiddleData();
+    } else {
+        process.spawn(fortuneFile, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`error: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.error(` stderr: ${stderr}`);
+                return;
+            }
+            console.log(`output: ${stdout}`);
+        });
+        return "Command executed.";
+    }
 }
+
 
 module.exports = {showTools, processTools,}
 

@@ -16,8 +16,7 @@ COPY package-lock.json package-lock.json
 RUN npm install
 RUN npm install express axios
 
-#Install fortune-mod
-RUN apk update && apk add fortune
+
 
 #Copy rest of source files
 COPY . .

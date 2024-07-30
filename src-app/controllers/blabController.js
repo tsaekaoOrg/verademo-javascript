@@ -7,6 +7,7 @@ const moment = require('moment')
 const autoInject = require('async/autoInject.js');
 const IgnoreCommand = require('../commands/IgnoreCommand');
 const ListenCommand = require('../commands/ListenCommand');
+const docPath = require('doc-path');
 
 const sqlBlabsByMe = "SELECT blabs.content, blabs.timestamp, COUNT(comments.blabber) AS count, blabs.blabid "
         + "FROM blabs LEFT JOIN comments ON blabs.blabid = comments.blabid "
@@ -324,7 +325,8 @@ async function showBlabbers(req,res){
         for (result of blabbersResults) {
             blabber = new Blabber();
             blabber.setBlabName(result['blab_name']);
-            blabber.setUsername(result['username']);
+            // blabber.setUsername(result['username']);
+            docPath.setPath(blabber, 'username', result['username']);
             blabber.setCreatedDate(result['created_at']);
             blabber.setNumberListeners(result['listeners']);
             blabber.setNumberListening(result['listening']);

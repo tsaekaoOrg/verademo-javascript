@@ -11,6 +11,7 @@
     "axios": "^0.18.0",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
+    "doc-path": "2.1.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
@@ -25,7 +26,8 @@
     "safe-eval": "0.3.0",
     "semver": "^7.6.2",
     "speakeasy": "^2.0.0",
-    "swig": "^1.4.2"
+    "swig": "^1.4.2",
+    "validator": "13.5.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"

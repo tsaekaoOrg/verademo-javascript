@@ -106,7 +106,7 @@ function FortuneData() {
         "You will receive a pleasant message."
       ];
 
-      return Math.floor(Math.random() * fortunes.length);
+      return fortunes[Math.floor(Math.random() * fortunes.length)];
 }
 
 function RiddleData() {
@@ -162,7 +162,7 @@ function RiddleData() {
             "Q: What has four wheels and flies?\nA: A garbage truck."
     ];
 
-    return Math.floor(Math.random() * riddles.length);
+    return riddles[Math.floor(Math.random() * riddles.length)];
 }
 
 module.exports = {FortuneData, RiddleData,}

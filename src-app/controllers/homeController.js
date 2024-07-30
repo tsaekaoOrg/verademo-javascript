@@ -5,14 +5,17 @@ async function renderGet(req, res) {
     try {
         console.log('check if user is logged in')
         if (req.session.username) {
-            console.log('user logged in, redirecting to feed')
-            host_ip = req.get('host').split(':')[0]
+            console.log('user logged in, redirecting to feed');
+            host_ip = req.get('host').split(':')[0];
+            console.log('http://' + host_ip + ':' + req.socket.localPort + '/feed');
             axios.request({
                 method: 'get',
                 url: 'http://' + host_ip + ':' + req.socket.localPort + '/feed',
                 maxContentLength: 5000,
-                httpAgent: new httpAgent({keepAlive: true}),
-            })
+                // httpAgent: new httpAgent({keepAlive: true}),
+            }).catch(error => {
+                console.log(error.message);
+            });
         }
         return userController.showLogin(req, res)
     }

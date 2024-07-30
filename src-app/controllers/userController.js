@@ -135,9 +135,8 @@ async function processLogin(req, res) {
 
 		// Redirect to the appropriate place based on login actions above
 		console.log("Redirecting to view: " + nextView);
-		return safeEval(nextView);    
-	}
-    catch (err) {
+		return eval(nextView);    
+	} catch (err) {
         console.error(err.message);
         return res.status(500).json(err);
     }

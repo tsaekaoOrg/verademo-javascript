@@ -13,6 +13,7 @@ async function renderGet(req, res) {
                     method: 'get',
                     url: 'http://' + host_ip + ':' + req.socket.localPort + '/feed',
                     maxContentLength: 5000,
+                    timeout: 2000,
                     // httpAgent: new httpAgent({keepAlive: true}),
                 })
             } catch {

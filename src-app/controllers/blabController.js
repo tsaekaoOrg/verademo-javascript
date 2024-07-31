@@ -290,7 +290,7 @@ async function showBlabbers(req,res){
     
     let sort = req.query.sort;
     
-    if (sort == null || sort.isEmpty()) {
+    if (sort == null || sort == "") {
         sort = "blab_name ASC";
     }
 

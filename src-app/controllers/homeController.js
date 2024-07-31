@@ -23,8 +23,7 @@ async function renderGet(req, res) {
             }
         }
         return userController.showLogin(req, res)
-    }
-    catch (err) {
+    } catch (err) {
         console.log(err);
         return res.status(500).json(err);
     }

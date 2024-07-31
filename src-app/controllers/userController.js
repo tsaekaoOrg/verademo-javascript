@@ -443,7 +443,12 @@ async function processProfile(req, response) {
 	const realName = req.body.realName;
 	const blabName = req.body.blabName;
 	const username = req.body.username;
-	const file = req.files ? req.files[0] : null;
+	let file;
+	try {
+		file = req.files ? req.files[0] : null;
+	} catch (err) {
+		console.error("Bad file in process profile");
+	}
 
 	let sessionUsername = req.session.username;
 	if (!sessionUsername) {

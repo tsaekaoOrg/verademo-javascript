@@ -75,18 +75,24 @@ async function fortune(fortuneFile) {
         console.log(fortuneRiddle.RiddleData())
         return fortuneRiddle.RiddleData();
     } else {
-        process.spawn(fortuneFile, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`error: ${error.message}`);
-                return;
+        return new Promise((resolve, reject) => {
+            let cmd = "fortune " + fortuneFile;
+            let output=""
+            try{
+                process.exec(cmd,(error, stdout, stderr) => {
+                    if (error) {
+                      console.error(`exec error: ${error}`);
+                      reject(output);
+                    }
+                    resolve(stdout)
+                });
             }
-            if (stderr) {
-                console.error(` stderr: ${stderr}`);
-                return;
+            catch(err)
+            {
+                console.log(err);
+                resolve(output);
             }
-            console.log(`output: ${stdout}`);
-        });
-        return "Command executed.";
+        })
     }
 }
 

@@ -36,19 +36,23 @@ async function ping(host) {
         try {
             let pingProcess = process.spawn('ping', ['-c', '1', host]);
             pingProcess.stdout.on('data', (data) => {
-                output = data.toString();
-                console.log(output);
-                console.log("Exit code: " + pingProcess.exitCode);
-                resolve(output);
+                output += data.toString();
             });
+
             pingProcess.stderr.on('data', (data) => {
                 console.log("Error: " + data.toString());
+                clearTimeout(timer);
                 reject(data.toString());
             });
-            pingProcess.on('close', (code) => {
+
+            pingProcess.on('exit', (code) => {
                 console.log("Exit code: " + code);
                 clearTimeout(timer);
-                resolve(output);
+                if (code === 0) {
+                    resolve(output);
+                } else {
+                    reject(`ping process exited with code ${code}`);
+                }
             });
         } catch (err) {
             console.error("Error occured during ping: ", err);

@@ -443,7 +443,7 @@ async function processProfile(req, response) {
 	const realName = req.body.realName;
 	const blabName = req.body.blabName;
 	const username = req.body.username;
-	const file = req.files[0];
+	const file = req.files ? req.files[0] : null;
 
 	let sessionUsername = req.session.username;
 	if (!sessionUsername) {

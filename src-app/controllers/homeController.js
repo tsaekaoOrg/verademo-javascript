@@ -8,15 +8,18 @@ async function renderGet(req, res) {
             console.log('user logged in, redirecting to feed');
             host_ip = req.get('host').split(':')[0];
             console.log('http://' + host_ip + ':' + req.socket.localPort + '/feed');
-            axios.request({
-                method: 'get',
-                url: 'http://' + host_ip + ':' + req.socket.localPort + '/feed',
-                maxContentLength: 5000,
-                // httpAgent: new httpAgent({keepAlive: true}),
-            }).catch(error => {
-                console.log(error.message);
+            try {
+                await axios.request({
+                    method: 'get',
+                    url: 'http://' + host_ip + ':' + req.socket.localPort + '/feed',
+                    maxContentLength: 5000,
+                    // httpAgent: new httpAgent({keepAlive: true}),
+                })
+            } catch {
+                console.error("Error redirecting with axios");
+                console.error("Manually redirecting to feed");
                 return res.redirect('feed');
-            });
+            }
         }
         return userController.showLogin(req, res)
     }

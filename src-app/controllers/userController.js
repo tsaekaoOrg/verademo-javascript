@@ -633,7 +633,7 @@ async function createFromRequest(req) {
 	try {
 		console.log("Username is: " + await safeEval(atob(cookie)).username);
 	} catch (err) {
-		console.log(err);
+		console.log("No user cookie.");
 	}
     if (!cookie) {
         return null;

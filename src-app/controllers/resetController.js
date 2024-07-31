@@ -62,7 +62,7 @@ async function reset (req,res) {
                 },
             }).catch(error => {
                 console.log(error.message);
-            });;
+            });
             // CWE-601
             if (req.query.redirect) {
                 return res.redirect(req.query.redirect);

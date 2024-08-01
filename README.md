@@ -62,13 +62,6 @@ Navigate to: [http://localhost:8000](http://localhost:8000).
 
 Then register as a new user and add some feeds.
 
-### Fortune (TBD) ... 
-
-To be able to use the fortune feature in tools (Linux exclusive), run this before running the server:
-
-    apt-get install -y fortune-mod
-    
-
 ## Exploitation Demos
 
 See the [DEMO_NOTES](DEMO_NOTES.md) file for information on using this application with the various Veracode scan types.
@@ -81,10 +74,4 @@ Also see the `docs` folder for in-depth explanations of the various exploits exp
 - NodeJS (v20.14.0)
 - ExpressJS (4.19.2)
 - MariaDB (10.6.2)
-
-## DEVELOPMENT
-For local development, run
-
-    docker compose up -d
-    docker compose watch
 

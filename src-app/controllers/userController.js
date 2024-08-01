@@ -600,22 +600,22 @@ async function processProfile(req, response) {
 			fs.rename(file.path, filepath, (err) => { if (err) throw err; })
 		} catch (err) {
 			console.error(err);
+			return response.status(500).send("{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}");
 		}
 
 	}
 
-	
-	let msg = `Successfully changed values!\\\\nusername: ${username.toLowerCase()}\\\\nReal Name: ${realName}\\\\nBlab Name: ${blabName}`;
-	let res = `{\"values\": {\"username\": \"${username.toLowerCase()}\", \"realName\": \"${realName}\", \"blabName\": \"${blabName}\"}, \"message\": \"<script>alert('`
-			+ msg + `');</script>\"}`;
-
 	try {
+		let msg = `Successfully changed values!\\\\nusername: ${username.toLowerCase()}\\\\nReal Name: ${realName}\\\\nBlab Name: ${blabName}`;
+		let res = `{\"values\": {\"username\": \"${username.toLowerCase()}\", \"realName\": \"${realName}\", \"blabName\": \"${blabName}\"}, \"message\": \"<script>alert('`
+				+ msg + `');</script>\"}`;
 		await response.set('content-type', 'application/json');
+		return response.status(200).send(res);
 	} catch (err) {
 		console.error(err);
+		return response.status(500).send("{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}");
 	}
 
-	return response.status(200).send(res);
 
 }
 

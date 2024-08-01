@@ -474,101 +474,106 @@ async function processProfile(req, response) {
 
 	// Rename profile image if username changes
 	if (!(username == oldUsername)) {
-		// Check if username exists
-		let exists = false;
-		let newUsername = username.toLowerCase();
 		try {
-			console.log("Preparing the duplicate username check Prepared Statement");
-			let result = await dbconnector.query("SELECT username FROM users WHERE username=?", [newUsername])
-			if (result.length != 0) {
-				console.info("Username: " + username + " already exists. Try again.");
-				exists = true;
-			}
-		} catch (err) {
-			console.error(err);
-		}
-		if (exists) {
+			// Check if username exists
+			let exists = false;
+			let newUsername = username.toLowerCase();
 			try {
-				await response.set('content-type', 'application/json');
-			} catch {
+				console.log("Preparing the duplicate username check Prepared Statement");
+				let result = await dbconnector.query("SELECT username FROM users WHERE username=?", [newUsername])
+				if (result.length != 0) {
+					console.info("Username: " + username + " already exists. Try again.");
+					exists = true;
+				}
+			} catch (err) {
 				console.error(err);
 			}
-			return response.status(409).send("{\"message\": \"<script>alert('That username already exists. Please try another.');</script>\"}");
-		}
-
-		// Attempt to update username
-		oldUsername = oldUsername.toLowerCase();
-		let sqlUpdateQueries = [];
-		let renamed = false;
-		try {
-			let connect = await dbconnector.getConnection();
-			const pBeginTransaction = util.promisify(connect.beginTransaction).bind(connect);
-			const pQuery = util.promisify(connect.query).bind(connect);
-			const pCommit = util.promisify(connect.commit).bind(connect);
-			const pRollback = util.promisify(connect.rollback).bind(connect);
-			const pRelease = util.promisify(connect.release).bind(connect);
-
-			let sqlStrQueries = ["UPDATE users SET username=? WHERE username=?",
-								"UPDATE blabs SET blabber=? WHERE blabber=?",
-								"UPDATE comments SET blabber=? WHERE blabber=?",
-								"UPDATE listeners SET blabber=? WHERE blabber=?",
-								"UPDATE listeners SET listener=? WHERE listener=?",
-								"UPDATE users_history SET blabber=? WHERE blabber=?"];
-			
-			try {
-				await pBeginTransaction();
+			if (exists) {
 				try {
-					for (query of sqlStrQueries) {
-						console.log("Preparing the Prepared Statement: " + query)
-						await pQuery(query, [newUsername, oldUsername])
-					}
+					await response.set('content-type', 'application/json');
+				} catch {
+					console.error(err);
+				}
+				return response.status(409).send("{\"message\": \"<script>alert('That username already exists. Please try another.');</script>\"}");
+			}
 
-					await pCommit();
-					pRelease();
+			// Attempt to update username
+			oldUsername = oldUsername.toLowerCase();
+			let sqlUpdateQueries = [];
+			let renamed = false;
+			try {
+				let connect = await dbconnector.getConnection();
+				const pBeginTransaction = util.promisify(connect.beginTransaction).bind(connect);
+				const pQuery = util.promisify(connect.query).bind(connect);
+				const pCommit = util.promisify(connect.commit).bind(connect);
+				const pRollback = util.promisify(connect.rollback).bind(connect);
+				const pRelease = util.promisify(connect.release).bind(connect);
+
+				let sqlStrQueries = ["UPDATE users SET username=? WHERE username=?",
+									"UPDATE blabs SET blabber=? WHERE blabber=?",
+									"UPDATE comments SET blabber=? WHERE blabber=?",
+									"UPDATE listeners SET blabber=? WHERE blabber=?",
+									"UPDATE listeners SET listener=? WHERE listener=?",
+									"UPDATE users_history SET blabber=? WHERE blabber=?"];
+				
+				try {
+					await pBeginTransaction();
+					try {
+						for (query of sqlStrQueries) {
+							console.log("Preparing the Prepared Statement: " + query)
+							await pQuery(query, [newUsername, oldUsername])
+						}
+
+						await pCommit();
+						pRelease();
+					} catch (err) {
+						console.error("Error loading data, reverting changes: ", err);
+						await pRollback();
+						pRelease();
+					}
 				} catch (err) {
-					console.error("Error loading data, reverting changes: ", err);
+					console.error("Error starting a transaction: ", err);
 					await pRollback();
 					pRelease();
 				}
+
+				oldImage = await getProfileImageFromUsername(oldUsername);
+				if (oldImage) {
+					extension = oldImage.substring(oldImage.lastIndexOf("."));
+
+					console.log ("Renaming profile image from " + oldImage + " to " + newUsername + extension);
+					oldName = image_dir + oldImage;
+					newName = image_dir + newUsername + extension;
+
+					fs.rename(oldName, newName, (err) => { if (err) throw err; });
+				}
+				renamed = true;
 			} catch (err) {
-				console.error("Error starting a transaction: ", err);
-				await pRollback();
-				pRelease();
-			}
+				console.error(err);
+			} 
+			
+			try {
+				if (!renamed) {
+					await response.set('content-type', 'application/json');
+					return response.status(500).send("{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}");
+				}
 
-			oldImage = await getProfileImageFromUsername(oldUsername);
-			if (oldImage) {
-				extension = oldImage.substring(oldImage.lastIndexOf("."));
+				// Update all session and cookie logic
+				req.session.username = username;
+				response.cookie('username', username);
 
-				console.log ("Renaming profile image from " + oldImage + " to " + newUsername + extension);
-				oldName = image_dir + oldImage;
-				newName = image_dir + newUsername + extension;
+				// Update remember me functionality
 
-				fs.rename(oldName, newName, (err) => { if (err) throw err; });
-			}
-			renamed = true;
-		} catch (err) {
-			console.error(err);
-		} 
-		
-		try {
-			if (!renamed) {
-				await response.set('content-type', 'application/json');
-				return response.status(500).send("{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}");
-			}
-
-			// Update all session and cookie logic
-			req.session.username = username;
-			response.cookie('username', username);
-
-			// Update remember me functionality
-
-			let currentUser = await createFromRequest(req);
-			if (currentUser) {
-				currentUser.username = username;
-				await updateInResponse(currentUser, response);
+				let currentUser = await createFromRequest(req);
+				if (currentUser) {
+					currentUser.username = username;
+					await updateInResponse(currentUser, response);
+				}
+			} catch (err) {
+				console.error(err);
 			}
 		} catch (err) {
+			console.error("Error updating username");
 			console.error(err);
 		}
 	}
@@ -597,6 +602,7 @@ async function processProfile(req, response) {
 
 	}
 
+	
 	let msg = `Successfully changed values!\\\\nusername: ${username.toLowerCase()}\\\\nReal Name: ${realName}\\\\nBlab Name: ${blabName}`;
 	let res = `{\"values\": {\"username\": \"${username.toLowerCase()}\", \"realName\": \"${realName}\", \"blabName\": \"${blabName}\"}, \"message\": \"<script>alert('`
 			+ msg + `');</script>\"}`;

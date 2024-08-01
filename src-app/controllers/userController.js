@@ -575,6 +575,8 @@ async function processProfile(req, response) {
 		} catch (err) {
 			console.error("Error updating username");
 			console.error(err);
+			await response.set('content-type', 'application/json');
+			return response.status(500).send("{\"message\": \"<script>alert('An error occurred, please try again.');</script>\"}");
 		}
 	}
 

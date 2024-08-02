@@ -58,21 +58,6 @@ app.listen(PORT, () => {
   console.log(`listening for requests on port ${PORT}`)
 })
 
-const _safeEval = require('safe-eval'),
-safeEval = (eval_expression) => {
-  return _safeEval.safeEval(eval_expression);
-}
-
-const validator = require('validator'),
-isSlug = (str) => {
-  return validator.isSlug(str);
-}
-
-const docPath = require('doc-path'),
-setPath = (obj, key, val) => {
-  docPath.setPath(obj, key, val);
-}
-
 const _zipObjectDeep = require('lodash/zipObjectDeep'),
 zipObjectDeep = (props, values) => {
   return _zipObjectDeep(props, values);

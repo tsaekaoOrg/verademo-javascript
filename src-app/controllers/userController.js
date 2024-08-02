@@ -10,7 +10,7 @@ const image_dir = path.join(__dirname, '../../resources/images/');
 const User = require('../utils/User.js');
 const util = require('util');
 const safeEval = require('safe-eval');
-const validator = require('validator');
+const isSlug = require('validator/lib/isSlug');
 
 async function showLogin(req, res) {
     try {
@@ -280,7 +280,7 @@ async function processRegister(req, res)
 	}
 
 	try {
-		console.log(validator.isSlug(username) ? "Username is slug" : "Username is not slug");
+		console.log(isSlug(username) ? "Username is slug" : "Username is not slug");
 
 		let sql = "SELECT username FROM users WHERE username = '" + username + "'";
 		let result = await dbconnector.query(sql);

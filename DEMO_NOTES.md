@@ -6,11 +6,12 @@ Also see the `docs/flaws` folder for in-depth explanations of the various exploi
 
 ## Static scanning
 
-Build the app:
+Build the app using veracode autopackager:
 
-	zip -r verademo-python.zip app verademo-python *.py requirements.txt -x "*__pycache__*" 
+	./veracode package --source verademo-javascript -a
 
-The verademo-python.zip file is the file to upload for scanning. Either upload this file to the Veracode platform for a Policy/Sandbox scan, or use it with the Veracode Pipeline scan.
+
+The veracode-auto-pack-verademo-javascript-js.zip file is the file to upload for scanning. Either upload this file to the Veracode platform for a Policy/Sandbox scan, or use it with the Veracode Pipeline scan.
 
 ## SCA scanning
 
@@ -24,37 +25,4 @@ Use either the command-line version of the SCA agent (follow the install and con
 
 ### Vulnerable Methods
 
-The Veracode agent-based SCA scan can also find [vulnerable methods](https://docs.veracode.com/r/Finding_and_Fixing_Vulnerabilities#fixing-vulnerable-methods).  In this app, there is a vulnerable version of the md5hash library called from both the `User` and `UserController` classes.
-
-### SBOM generation
-
-SBOM generation for the application is supported after an SCA scan ([link](https://docs.veracode.com/r/Generating_a_Software_Bill_of_Materials_SBOM_for_Upload_Scans)) 
-
-SBOM generation for the Docker container is supported by the Container/CLI scanner ([link](https://docs.veracode.com/r/veracode_sbom)).
-
-## Veracode Fix
-
-This application has flaws that can be fixed with [Veracode Fix](https://docs.veracode.com/r/veracode_fix).  For an example of one:
-
-### Build the app
-
-	cd app
-	mvn clean package
-
-### Run the Veracode Pipeline scanner
-
-	java -jar ${path-to-pipeline-scanner}/pipeline-scan.jar -f target/verademo.war -esd true 
-
-### Run Veracode Fix
-
-	veracode fix src/main/java/com/veracode/verademo/controller/UserController.java
-
-The first flaw is an SQL Injection around line 170 that can be Fixed.
-
-To verify the fix re-build the app and re-run the Pipeline scanner. 
-
-## Container scan
-
-From the root of the project run the Veracode container scanner:
-
-	veracode scan --type directory --source . --output container_results.json	
+The Veracode agent-based SCA scan can also find [vulnerable methods](https://docs.veracode.com/r/Finding_and_Fixing_Vulnerabilities#fixing-vulnerable-methods). This app implements the vulnerable zipObjectDeep method.

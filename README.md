@@ -36,7 +36,7 @@ The version should be >= 2.22.
 
 Visit [docker desktop](https://www.docker.com/products/docker-desktop/) and download your compatible version.  Follow installation instructions.  Open the Docker app. 
 
-To run the container locally, clone the respository and in the project folder run this:
+To run the container, clone the respository and in the project folder run this:
 
     docker compose up -d
 
@@ -61,7 +61,9 @@ Then:
     npm install
     docker compose create database
     docker compose start database
-    npm run devStart
+    node app.js
+
+Or if you are developing, swap `node app.js` for `npm run devStart`
 
 Navigate to: [http://localhost:8000](http://localhost:8000).
 

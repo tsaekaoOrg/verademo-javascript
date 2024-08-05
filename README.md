@@ -36,7 +36,12 @@ The version should be >= 2.22.
 
 Visit [docker desktop](https://www.docker.com/products/docker-desktop/) and download your compatible version.  Follow installation instructions.  Open the Docker app. 
 
-To run the container for local development, clone the respository and in the project folder run this:
+To run the container locally, clone the respository and in the project folder run this:
+
+    docker compose up -d
+
+For development, comment out the last line of the `Dockerfile` and then uncomment the `CMD ["npm","run","devStart"]` line.
+Then run:
 
     docker compose up -d
     docker compose watch

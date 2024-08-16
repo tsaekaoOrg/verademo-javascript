@@ -26,6 +26,13 @@ Use either the command-line version of the SCA agent (follow the install and con
 
 The Veracode agent-based SCA scan can also find [vulnerable methods](https://docs.veracode.com/r/Finding_and_Fixing_Vulnerabilities#fixing-vulnerable-methods). This app implements the vulnerable zipObjectDeep method.
 
+### SBOM generation
+
+SBOM generation for the application is supported after an SCA scan ([link](https://docs.veracode.com/r/Generating_a_Software_Bill_of_Materials_SBOM_for_Upload_Scans)) 
+
+SBOM generation for the Docker container is supported by the Container/CLI scanner ([link](https://docs.veracode.com/r/veracode_sbom)).
+
+
 
 ### Veracode Fix
 This application contains flaws that can be rectified with [Veracode Fix](https://docs.veracode.com/r/veracode_fix)

@@ -43,11 +43,11 @@ There's two ways to run the Fix
 
 Install the VSCode plugin and scan within VSCode as seen below.
 
-	<img src="https://github.com/veracode-demo-labs/verademo-javascript/blob/main/docs/DEMO_NOTES_Images/VSCodePlugin.png" width="800" />  
+<img src="https://github.com/veracode-demo-labs/verademo-javascript/blob/main/docs/DEMO_NOTES_Images/VSCodePlugin.png" width="800" />  
 
 Run fix in the Command-line
 
-  	veracode fix 
+  	veracode fix src-app/controllers/userController.js
 
 Theres an example of CWE-78 flaw on line 37 that has a fix.
 

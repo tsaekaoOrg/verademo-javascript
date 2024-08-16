@@ -41,11 +41,11 @@ This application contains flaws that can be rectified with [Veracode Fix](https:
 ## Run Veracode Fix
 There's two ways to run the Fix
 
-1. Install the VSCode plugin and scan within VSCode as seen below.
+* Install the VSCode plugin and scan within VSCode as seen below.
 
-<img src="https://github.com/veracode-demo-labs/verademo-javascript/tree/main/docs/DEMO_NOTES_Images" width="800" />  
+	<img src="https://github.com/veracode-demo-labs/verademo-javascript/blob/main/docs/DEMO_NOTES_Images/VSCodePlugin.png" width="800" />  
 
-2. Run fix in the Command-line
+* Run fix in the Command-line
 
 		veracode fix src-app/controllers/userController.js
 

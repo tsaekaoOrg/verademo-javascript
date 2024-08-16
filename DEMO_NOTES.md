@@ -46,8 +46,8 @@ There's two ways to run the Fix
 <img src="https://github.com/veracode-demo-labs/verademo-javascript/docs/DEMO_NOTES_Images/VSCodePlugin.png" width="800" />  
 
 2. Run fix in the Command-line
-	
-	veracode fix src-app/controllers/userController.js
+
+		veracode fix src-app/controllers/userController.js
 
 Theres an example of CWE-78 flaw on line 37 that has a fix.
 
